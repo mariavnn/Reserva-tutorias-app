@@ -1,13 +1,17 @@
 import React from 'react'
 import { Stack } from 'expo-router'
+import { ThemeProvider } from '../providers/ThemeProvider'
 
 export default function RootLayout() {
   return(
-    <Stack>
+    <ThemeProvider>
+      <Stack>
         <Stack.Screen
             name='index'
             options={{headerShown: false}}
         />
-    </Stack>
+      </Stack>
+    </ThemeProvider>
+    
   )
 }

@@ -5,7 +5,7 @@ export default function RegisterScreen() {
   const router = useRouter();
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View className="flex-1, bg-slate-700">
       <Text>Pantalla de Registro</Text>
       
       <Button title="Registrarse" onPress={() => router.push("/auth/login")} />
