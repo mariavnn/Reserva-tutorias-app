@@ -56,7 +56,7 @@ export default function SelectorTab({ tabs, onSelect }) {
         {renderTabs()}
       </View>
       <Animated.View
-        className="absolute bottom-0 w-[160px] h-[3px] bg-primary-light dark:bg-primary-dark px-3 rounded-sm mx-5"
+        className="absolute bottom-0 w-[160px] h-[3px] bg-primary-light dark:bg-primary-dark px-6 rounded-sm mx-5"
         style={{
           transform: [{ translateX: underlinePosition }],
         }}

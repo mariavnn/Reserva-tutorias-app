@@ -1,4 +1,4 @@
-import { View, Text, Button, useColorScheme, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, Button, TouchableOpacity, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import "../../global.css";
 import SelectorTab from "../../components/SelectorTab";
@@ -6,7 +6,20 @@ import { Screen } from "../../components/Screen";
 import { useState } from "react";
 import GeneralButton from "../../components/GeneralButton";
 import SizedBox from "../../components/SizedBox";
-import { TextInput } from "react-native-web";
+import * as yup from 'yup';
+import { Formik } from 'formik';
+import InputField from "../../components/InputField";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Entypo from '@expo/vector-icons/Entypo';
+
+const LoginSchema = yup.object().shape({
+  email: yup
+    .string('Usuario inválido')
+    .required('El usuario es obligatorio'),
+  password: yup.string()
+    .min(6, 'Mínimo 6 caracteres')
+    .required('La contraseña es obligatoria'),
+});
 
 
 export default function LoginScreen() {
@@ -15,55 +28,67 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <Text className ="font-bold text-3xl text-text-light-primary dark:text-text-dark-primary">Login</Text>
+      <Text className ="font-bold text-3xl mt-20 text-text-light-primary dark:text-text-dark-primary">Login</Text>
+      <SizedBox height={30}/>
       <SelectorTab 
         tabs={['Soy Estudiante', 'Soy Tutor']}
         onSelect={(selectedTab) => setUserType(selectedTab === "Soy Estudiante" ? "Estudiante" : "Tutor")}
       />
-
+      <SizedBox height={60}/>
       <Text className = 'text-2xl font-bold flex w-full justify-start'>
         Hola {userType}!
       </Text>
+      <SizedBox height={28}/>
 
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        validationSchema={LoginSchema}
+        onSubmit={(values) => {
+          console.log('Datos enviados:', values);
+        }}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          <View className='w-full'>
+            
+            <InputField
+            label="Usuario"
+            icon={<FontAwesome name="user" size={24} color="gray" />}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            onChangeText={handleChange("email")}
+            onBlur={handleBlur("email")}
+            value={values.email}
+            error={errors.email}
+            touched={touched.email}
+            placeholder={"Usuario"}
+          />
 
+          <SizedBox height={4}/>
 
-      <Pressable>
-        <View>
-            <Text>Email</Text>
+          <InputField
+            label="Contraseña"
+            icon={<Entypo name="lock" size={24} color="gray" />}
+            secureTextEntry
+            onChangeText={handleChange("password")}
+            onBlur={handleBlur("password")}
+            value={values.password}
+            error={errors.password}
+            touched={touched.password}
+          />
 
-            <TextInput
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect={false}
-              keyboardType="email-address"
-              returnKeyType="next"
-              textContentType="username"
+            <SizedBox height={40}/>
+
+            <GeneralButton
+              title={'Login'}
+              onPress={() =>  router.push("/(authorized)/home")}
+              type="primary"
             />
           </View>
-      </Pressable>
-
-      <SizedBox height={16} />
-
-      <Pressable>
-        <View >
-          <Text >Password</Text>
-
-          <TextInput
-            autoCapitalize="none"
-            autoComplete="password"
-            autoCorrect={false}
-            returnKeyType="done"
-            secureTextEntry
-            textContentType="password"
-          />
-        </View>
-      </Pressable>
-
-      <GeneralButton
-        title={'Login'}
-        onPress={() =>  router.push("/(authorized)/home")}
-        type="primary"
-      />
+        )}
+      </Formik>
+      
+      <SizedBox height={10}/>
+      
       
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
         <Text className="text-sm text-text-light-secondary dark:text-text-dark-secondary">¿No tienes una cuenta? </Text>
