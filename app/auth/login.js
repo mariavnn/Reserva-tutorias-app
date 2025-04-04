@@ -11,6 +11,7 @@ import { Formik } from 'formik';
 import InputField from "../../components/InputField";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
+import GeneralTitle from "../../components/GeneralTitle";
 
 const LoginSchema = yup.object().shape({
   email: yup
@@ -28,7 +29,10 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <Text className ="font-bold text-3xl mt-20 text-text-light-primary dark:text-text-dark-primary">Login</Text>
+      <GeneralTitle
+        type="primary"
+        label={'Login'}
+      />
       <SizedBox height={30}/>
       <SelectorTab 
         tabs={['Soy Estudiante', 'Soy Tutor']}

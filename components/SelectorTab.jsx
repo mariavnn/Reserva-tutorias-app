@@ -42,7 +42,7 @@ export default function SelectorTab({ tabs, onSelect }) {
           onPress={() => handleTabPress(index, label)}
           style={{ width: TAB_WIDTH, alignItems: 'center' }}
         >
-          <Text className = {`text-lg ${activeIndex === index ? 'text-primary-light' : 'text-black'}`}>
+          <Text className = {`text-lg mb-1 w-[150px] text-center ${activeIndex === index ? 'text-primary-light' : 'text-black'}`}>
             {label}
           </Text>
         </TouchableOpacity>
