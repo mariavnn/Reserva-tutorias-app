@@ -1,17 +1,17 @@
 import { View, Text, Button, TouchableOpacity, TextInput } from "react-native";
 import { useRouter } from "expo-router";
-import "../../global.css";
-import SelectorTab from "../../components/SelectorTab";
-import { Screen } from "../../components/Screen";
+import "../../../global.css";
+import SelectorTab from "../../../components/SelectorTab";
+import { Screen } from "../../../components/Screen";
 import { useState } from "react";
-import GeneralButton from "../../components/GeneralButton";
-import SizedBox from "../../components/SizedBox";
+import GeneralButton from "../../../components/GeneralButton";
+import SizedBox from "../../../components/SizedBox";
 import * as yup from 'yup';
 import { Formik } from 'formik';
-import InputField from "../../components/InputField";
+import InputField from "../../../components/InputField";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
-import GeneralTitle from "../../components/GeneralTitle";
+import GeneralTitle from "../../../components/GeneralTitle";
 
 const LoginSchema = yup.object().shape({
   email: yup
@@ -32,6 +32,7 @@ export default function LoginScreen() {
       <GeneralTitle
         type="primary"
         label={'Login'}
+        className="mt-20"
       />
       <SizedBox height={30}/>
       <SelectorTab 
@@ -57,7 +58,6 @@ export default function LoginScreen() {
             <InputField
             label="Usuario"
             icon={<FontAwesome name="user" size={24} color="gray" />}
-            keyboardType="email-address"
             autoCapitalize="none"
             onChangeText={handleChange("email")}
             onBlur={handleBlur("email")}
@@ -71,13 +71,14 @@ export default function LoginScreen() {
 
           <InputField
             label="Contraseña"
+            isPassword= {true}
             icon={<Entypo name="lock" size={24} color="gray" />}
-            secureTextEntry
             onChangeText={handleChange("password")}
             onBlur={handleBlur("password")}
             value={values.password}
             error={errors.password}
             touched={touched.password}
+            placeholder={"Contraseña"}
           />
 
             <SizedBox height={40}/>

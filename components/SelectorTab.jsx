@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Animated,
   Dimensions,
@@ -7,11 +8,13 @@ import {
   View,
 } from 'react-native';
 
-export default function SelectorTab({ tabs, onSelect }) {
+export default function SelectorTab({ tabs, onSelect, selectedTab }) {
   const TAB_WIDTH = Dimensions.get('window').width / tabs.length;
+  const defaultSelectedTab = selectedTab || tabs[0];
 
   const underlineAnimation = useMemo(() => new Animated.Value(0), []);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const getTabIndex = (label) => tabs.findIndex((tab) => tab === label);
+  const [activeIndex, setActiveIndex] = useState(getTabIndex(selectedTab));
 
   const animateUnderline = (index) => {
     Animated.timing(underlineAnimation, {
@@ -20,6 +23,12 @@ export default function SelectorTab({ tabs, onSelect }) {
       useNativeDriver: false,
     }).start();
   };
+
+  useEffect(() => {
+    const newIndex = getTabIndex(selectedTab || defaultSelectedTab);
+    setActiveIndex(newIndex);
+    animateUnderline(newIndex);
+  }, [selectedTab, tabs]);
 
   const handleTabPress = (index, label) => {
     setActiveIndex(index);

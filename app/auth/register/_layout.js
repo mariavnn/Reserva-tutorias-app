@@ -1,9 +1,10 @@
-import { View, Text } from 'react-native'
+import { View, Text, KeyboardAvoidingView, Platform } from 'react-native'
 import React from 'react'
 import { Screen } from '../../../components/Screen'
 import SelectorTab from '../../../components/SelectorTab'
 import GeneralTitle from '../../../components/GeneralTitle'
 import { Slot, usePathname, useRouter } from 'expo-router'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 export default function RegisterLayout() {
     const router = useRouter()
@@ -22,18 +23,28 @@ export default function RegisterLayout() {
     pathname.includes('academic') ? 'Información Académica' : 'Información Personal'
 
   return (
-    <Screen>
-      <GeneralTitle type="primary" label="Registro" />
+    <SafeAreaProvider>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <Screen>
+          <GeneralTitle type="primary" label="Registro"  className='mt-4 mb-6'/>
 
-      <SelectorTab
-        tabs={['Información Personal', 'Información Académica']}
-        onSelect={handleTabSelect}
-        defaultTab={activeTab}
-      />
+          <SelectorTab
+            tabs={['Información Personal', 'Información Académica']}
+            onSelect={handleTabSelect}
+            selectedTab={activeTab}
+            key={pathname}
+            defaultTab={activeTab}
+          />
 
-      <View className="mt-4">
-        <Slot />
-      </View>
-    </Screen>
+          <View className="flex-1 w-full mt-10">
+            <Slot />
+          </View>
+        </Screen>
+      </KeyboardAvoidingView>
+    </SafeAreaProvider>
+    
   )
 }
