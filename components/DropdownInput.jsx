@@ -19,10 +19,10 @@ export default function DropdownInput({ label, selectedValue, onValueChange, ite
             maxHeight={300}
             disable={disabled}
             onChange={onValueChange}
-            placeholderStyle={{ color: '#9CA3AF' }} // gray-400
-            selectedTextStyle={{ color: '#111827', fontWeight: '500' }} // gray-900
+            placeholderStyle={{ color: '#9CA3AF' }} 
+            selectedTextStyle={{ color: '#111827', fontWeight: '500' }} 
             inputSearchStyle={{
-            backgroundColor: '#F3F4F6', // gray-100
+            backgroundColor: '#F3F4F6', 
             paddingHorizontal: 12,
             borderRadius: 8,
             }}

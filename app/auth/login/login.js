@@ -12,9 +12,10 @@ import InputField from "../../../components/InputField";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
 import GeneralTitle from "../../../components/GeneralTitle";
+import { useLoginStore } from "../../../store/useLoginStore";
 
 const LoginSchema = yup.object().shape({
-  email: yup
+  username: yup
     .string('Usuario inválido')
     .required('El usuario es obligatorio'),
   password: yup.string()
@@ -23,9 +24,39 @@ const LoginSchema = yup.object().shape({
 });
 
 
+const mockUsers = [
+  { username: 'mvnieto', password: 'victoria123', role: 'student' },
+  { username: 'tutorUser', password: 'tutor123', role: 'tutor' },
+];
+ 
 export default function LoginScreen() {
   const router = useRouter();
   const [userType, setUserType] = useState("Estudiante");
+  const login = useLoginStore(state => state.login);
+
+
+  const handleAuth = (values) => {
+    const roleKey = userType === "Estudiante" ? "student" : "tutor";
+    const user = mockUsers.find(
+      u =>
+        u.username.toLowerCase() === values.username.toLowerCase() &&
+        u.password === values.password &&
+        u.role === roleKey
+    );
+
+    console.log("User", user);
+
+    if (user) {
+      login(user)
+      if (user.role === "student") {
+        router.push("/(authorized)/(student)/(tabs)");
+      } else if (user.role === "tutor") {
+        router.push("/(authorized)/(tutor)/(tabs)"); 
+      }
+    } else {
+      alert("Credenciales inválidas o tipo de usuario incorrecto");
+    }
+  }
 
   return (
     <Screen>
@@ -46,9 +77,10 @@ export default function LoginScreen() {
       <SizedBox height={28}/>
 
       <Formik
-        initialValues={{ email: '', password: '' }}
+        initialValues={{ username: '', password: '' }}
         validationSchema={LoginSchema}
         onSubmit={(values) => {
+          handleAuth(values);
           console.log('Datos enviados:', values);
         }}
       >
@@ -59,11 +91,11 @@ export default function LoginScreen() {
             label="Usuario"
             icon={<FontAwesome name="user" size={24} color="gray" />}
             autoCapitalize="none"
-            onChangeText={handleChange("email")}
-            onBlur={handleBlur("email")}
-            value={values.email}
-            error={errors.email}
-            touched={touched.email}
+            onChangeText={handleChange("username")}
+            onBlur={handleBlur("username")}
+            value={values.username}
+            error={errors.username}
+            touched={touched.username}
             placeholder={"Usuario"}
           />
 
@@ -85,7 +117,7 @@ export default function LoginScreen() {
 
             <GeneralButton
               title={'Login'}
-              onPress={() =>  router.push("/(authorized)/home")}
+              onPress={handleSubmit}
               type="primary"
             />
           </View>
