@@ -48,11 +48,11 @@ export default function PersonalForm() {
           }}
         >
         {({ handleChange, handleBlur, handleSubmit,setFieldValue,  values, errors, touched }) => (
-            <View className= "flex-1 w-ful py-2">
+            <View className= "flex-1 w-full py-2">
                <ScrollView 
                 className=''
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{paddingBottom: 120}}
+                contentContainerStyle={{paddingBottom: 10}}
               >
                 <View className = "h-5/6">
                   <DropdownInput
@@ -121,12 +121,11 @@ export default function PersonalForm() {
               </ScrollView>
 
               <SizedBox height={6}/>
-              <View className="absolute bottom-3 w-full h-[110px] px-4 py-2 bg-background-light">
-                <GeneralButton
+              <GeneralButton
                   title={"Siguiente"}
                   onPress={handleSubmit}
-                />
-              </View>
+              />
+              
               
             </View>
 

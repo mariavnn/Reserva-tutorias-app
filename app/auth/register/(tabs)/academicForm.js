@@ -47,8 +47,6 @@ export default function AcademicForm() {
   ];
 
   return (
-
-
     <View>
       <Formik
          initialValues={{

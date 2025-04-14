@@ -6,10 +6,15 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 
 
-export default function DropdownInput({ label, selectedValue, onValueChange, items, error, touched, disabled }) {
+export default function DropdownInput({ label, labelIcon, selectedValue, onValueChange, items, error, touched, disabled }) {
   return (
     <View className="w-full">
-        {label && <Text className="text-gray-700 mb-1">{label}</Text>}
+        {label && (
+          <View className="flex-row gap-1 items-center mb-1">
+            {labelIcon && <View>{labelIcon}</View>}
+            <Text className="text-gray-700 mr-1">{label}</Text>
+          </View>
+        )}
         <Dropdown
             data={items}
             labelField="label"
@@ -22,13 +27,13 @@ export default function DropdownInput({ label, selectedValue, onValueChange, ite
             placeholderStyle={{ color: '#9CA3AF' }} 
             selectedTextStyle={{ color: '#111827', fontWeight: '500' }} 
             inputSearchStyle={{
-            backgroundColor: '#F3F4F6', 
             paddingHorizontal: 12,
             borderRadius: 8,
             }}
             iconStyle={{ width: 20, height: 20 }}
             style={{
                 borderWidth: 1,
+                backgroundColor:'white',
                 borderColor: error && touched ? '#EF4444' : '#D1D5DB', // rojo si error
                 borderRadius: 8,
                 paddingHorizontal: 12,

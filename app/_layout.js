@@ -13,22 +13,7 @@ export default function RootLayout() {
       <ThemeProvider>
         <Stack
            screenOptions={{
-            headerTitle: '',
-            headerStyle: {
-              backgroundColor: theme === 'dark' ? 'rgba(18, 18, 18, 0.9)' : '#F0F2F5',
-            },
-            headerShadowVisible: false,
-            headerTintColor: '#fff',
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                className="ml-3 pr-1 bg-primary-light dark:bg-primary-dark rounded-full w-10 h-10 flex items-center justify-center"
-              >
-                <AntDesign name="left" size={23} color="white"/>
-            </TouchableOpacity>
-            ),
-              
-            
+            headerShown:false
           }}>
           <Stack.Screen
               name='index'
@@ -36,10 +21,9 @@ export default function RootLayout() {
                 headerShown: false
               }}
           />
+          
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>
-    
-    
   )
 }
