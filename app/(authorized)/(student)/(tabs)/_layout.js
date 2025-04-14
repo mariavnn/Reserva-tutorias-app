@@ -22,28 +22,28 @@ export default function StudentTabLayout() {
             name='index'
             options={{
                 title: 'Home',
-                tabBarIcon: () => <Feather name="home" size={24} color="black" />,
+                tabBarIcon: ({color}) => <Feather name="home" size={24} color={color} />,
             }}
         />
         <Tabs.Screen
             name='tutorias'
             options={{
                 title: 'Tutorias',
-                tabBarIcon: ({ color }) => <AntDesign name="search1" size={24} color="black" />
+                tabBarIcon: ({ color }) => <AntDesign name="search1" size={24} color={color} />
             }}
         />
         <Tabs.Screen
             name='notificaciones'
             options={{
                 title: 'Notificaciones',
-                tabBarIcon: ({ color }) => <Feather name="clock" size={24} color="black" />
+                tabBarIcon: ({ color }) => <Feather name="clock" size={24} color={color} />
             }}
         />
         <Tabs.Screen
             name='perfil'
             options={{
                 title: 'Perfil',
-                tabBarIcon: ({ color }) => <AntDesign name="user" size={24} color="black" />
+                tabBarIcon: ({ color }) => <AntDesign name="user" size={24} color={color} />
             }}
         />
     </Tabs>

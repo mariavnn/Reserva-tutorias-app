@@ -1,5 +1,5 @@
 import { View, Text, KeyboardAvoidingView, ScrollViewBase, ScrollView } from 'react-native'
-import React from 'react'
+import React, { useRef } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import SizedBox from '../../../../components/SizedBox'
@@ -18,7 +18,9 @@ import InputHour from '../../../../components/InputHour'
 import useCreateTutoriaStore from '../../../../store/useCreateTutoriaStore'
 import { useState } from 'react'
 import ConfirmRegisterModal from '../../../../components/modals/ConfirmRegisterModal'
-import CreateTutoriaModal from '../../../../components/modals/createTutoriaModal'
+import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModal'
+import { useRouter } from 'expo-router'
+import { useEffect } from 'react'
 
 
 const salones = [
@@ -26,6 +28,12 @@ const salones = [
   { label: 'GM-208', value: '2' },
   { label: 'Sala de Profesore', value: '3' },
   { label: 'CICOM-104', value: '4' },
+]
+
+const materias = [
+  { label: 'Calculo Integral', value: '1' },
+  { label: 'Calculo Multivariable', value: '2' },
+  { label: 'Algebra Lineal', value: '3' },
 ]
 
 const crearTutoriaSchema = yup.object().shape({
@@ -48,6 +56,31 @@ const crearTutoriaSchema = yup.object().shape({
 export default function CrearTutoriasTutor() {
   const { setTutoriaData } = useCreateTutoriaStore();
   const [modalVisible, setModalVisible] = useState(false);
+  const [initialValues, setInitialValues] = useState({
+    materia: '',
+    cantidadEstudiantes: '',
+    fecha: '',
+    horaInicio: '',
+    horaFin: '',
+    ubicacion: ''
+  });
+  const route = useRouter();
+
+  const closeModal = () => {
+    setModalVisible(false);
+    route.back();
+  }
+
+  useEffect(() => {
+    setInitialValues({
+      materia: '',
+      cantidadEstudiantes: '',
+      fecha: '',
+      horaInicio: '',
+      horaFin: '',
+      ubicacion: ''
+    });
+  }, []); 
 
   return (
     <KeyboardAvoidingView
@@ -67,44 +100,37 @@ export default function CrearTutoriasTutor() {
 
           <SizedBox height={24}/>
           <Formik
-            initialValues={{
-              materia: '',
-              cantidadEstudiantes: '',
-              fecha: '',
-              horaInicio: '',
-              horaFin: '',
-              ubicacion: ''
-            }}
+            initialValues={initialValues}
             validationSchema={crearTutoriaSchema}
             onSubmit={values => {
-              // Manejar el envío del formulario aquí
               setTutoriaData(values);
               setModalVisible(true);
               console.log(values);
             }}
           
           >
-          {({ handleChange, handleBlur, handleSubmit, setFieldValue, values, errors, touched }) => (
+          {({ handleChange, handleBlur, handleSubmit, setFieldValue,  values, errors, touched }) => (
             <View className="w-full h-[79%]">
-              <ScrollView className="mb-4" contentContainerStyle={{paddingBottom: 10}}>
-                <InputField
-                  labelIcon={<FontAwesome5 name="book" size={16} color="black" />}
+              <ScrollView className="mb-4" contentContainerStyle={{paddingBottom: 10, flexGrow: 1}}>
+                <DropdownInput
                   label={"Materia"}
-                  placeholder={"Nombre de la Materia"}
-                  onChangeText={handleChange("materia")}
-                  onBlur={handleBlur("materia")}
-                  value={values.materia}
+                  labelIcon={<FontAwesome5 name="book" size={16} color="black" />}
+                  items={materias}
+                  selectedValue={values.materia}
+                  onValueChange={(item) => setFieldValue('materia', item.label)}
                   error={errors.materia}
                   touched={touched.materia}
+                  disabled={false}
                 />
+                <SizedBox height={10}/>
                 <DropdownInput
                   label={"Ubicacion"}
                   labelIcon={<Entypo name="location-pin" size={18} color="black" />}
                   items={salones}
                   selectedValue={values.ubicacion}
                   onValueChange={(item) => setFieldValue('ubicacion', item.label)}
-                  error={errors.typeUser}
-                  touched={touched.typeUser}
+                  error={errors.ubicacion}
+                  touched={touched.ubicacion}
                   disabled={false}
                 />
                 <SizedBox height={10}/>
@@ -166,24 +192,19 @@ export default function CrearTutoriasTutor() {
           )}
           </Formik>
           
-          
-          
-
+          {
+            modalVisible && (
+              <CreateTutoriaModal
+                visible={modalVisible}
+                onClose={closeModal}
+                onConfirm={() => {
+                  setModalVisible(false);
+                }}
+              />
+            )
+          }
         </View>
-     
     </Screen>
-
-      {
-        modalVisible && (
-          <CreateTutoriaModal
-            visible={modalVisible}
-            onClose={() => setModalVisible(false)}
-            onConfirm={() => {
-              setModalVisible(false);
-            }}
-          />
-        )
-      }
     </KeyboardAvoidingView>
    
   )

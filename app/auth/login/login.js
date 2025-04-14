@@ -13,6 +13,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
 import GeneralTitle from "../../../components/GeneralTitle";
 import { useLoginStore } from "../../../store/useLoginStore";
+import { useUserTypeStore } from "../../../store/useUserTypeStore";
 
 const LoginSchema = yup.object().shape({
   username: yup
@@ -31,7 +32,9 @@ const mockUsers = [
  
 export default function LoginScreen() {
   const router = useRouter();
-  const [userType, setUserType] = useState("Estudiante");
+  // const [userType, setUserType] = useState("Estudiante");
+  const userType = useUserTypeStore(state => state.userType);
+  const setUserType = useUserTypeStore(state => state.setUserType);
   const login = useLoginStore(state => state.login);
 
 
@@ -68,6 +71,7 @@ export default function LoginScreen() {
       <SizedBox height={30}/>
       <SelectorTab 
         tabs={['Soy Estudiante', 'Soy Tutor']}
+        selectedTab={userType === "Estudiante" ? "Soy Estudiante" : "Soy Tutor"}
         onSelect={(selectedTab) => setUserType(selectedTab === "Soy Estudiante" ? "Estudiante" : "Tutor")}
       />
       <SizedBox height={60}/>

@@ -63,7 +63,7 @@ export default function HomeTutor() {
   const [tutorias, setTutorias] = useState(infoTutorias);
 
   const handleDelete = (id) => {
-    const nuevasTutorias = infoTutorias.filter((tutoria) => tutoria.id !== id);
+    const nuevasTutorias = tutorias.filter((tutoria) => tutoria.id !== id);
     setTutorias(nuevasTutorias);
   }
 
@@ -77,13 +77,19 @@ export default function HomeTutor() {
         />
         <SizedBox height={10}/>
         <ScrollView className="w-full py-5" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-          {tutorias.map((tutoria) => (
-            <TutoriasCard
-              key={tutoria.id}
-              tutoriaInfo={tutoria}
-              onDelete={() => handleDelete(tutoria.id)}
-            />
-          ))}
+          {tutorias.length === 0 ? (
+            <View className="flex-1 w-full justify-center">
+              <Text className="text-gray-500 text-center text-lg"> No tienes tutorias disponibles por el momento</Text>
+            </View>
+          ) : (
+            tutorias.map((tutoria) => (
+              <TutoriasCard
+                key={tutoria.id}
+                tutoriaInfo={tutoria}
+                onDelete={() => handleDelete(tutoria.id)}
+              />
+            ))
+          )}
         </ScrollView>
       </View>
     </Screen>
