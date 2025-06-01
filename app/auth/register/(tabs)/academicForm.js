@@ -56,6 +56,15 @@ export default function AcademicForm() {
     { label: 'Ingenieria en Sistemas', value: '1' },
   ]
 
+  //   const subjects = [
+  //   "Ingles III",
+  //   "Programacion Orientada a Objetos",
+  //   "Estadistica y Probabilidad",
+  //   "Calculo Integral",
+  //   "Mecanica",
+  //   "Electromagnetismo"
+  // ];
+
   const handleGetSubject = async (idCareer ) => {
     try{
       
@@ -63,7 +72,7 @@ export default function AcademicForm() {
       setLoadingSubjects(true);
       const response = await subjectService.getSubjectByIdCareer(idCareer);  
       console.log('response', response);
-      setSubjects(response.data);
+      setSubjects(response);
     }catch(error){
       console.error('Error al obtener materias:', error);
       setSubjects([]); 
@@ -97,7 +106,6 @@ export default function AcademicForm() {
               selectedValue={values.career}
               onValueChange={(value) => {
                   setFieldValue('career', value);
-                  console.log('VALUE CAREER', value?.value)
                   if (value?.value) {
                     handleGetSubject(value.value);
                   }
@@ -129,15 +137,16 @@ export default function AcademicForm() {
             <ScrollView keyboardShouldPersistTaps="handled">
               {loadingSubjects ? (
                   <ActivityIndicator size="large" color="#000" className="mt-6" />
-                ) : subjects.length === 0 ? (
+                ) : subjects.length === 0 ?(
                     <Text className="text-center text-gray-500 mt-4">
                       No hay materias disponibles
                     </Text>
                 ) : (
                   subjects.map((subject) => (
                     <SelectableCard
-                      key={subject.id || subject}
-                      label={subject.name || subject}
+                      key={subject.idMateria || subject}
+                      label={subject.nombreMateria || subject}
+                      subject={subject}
                       value={values.subjects}
                       onChange={(newSubjects) => setFieldValue('subjects', newSubjects)}
                     />

@@ -4,34 +4,30 @@ import { Pressable } from 'react-native'
 import Checkbox from 'expo-checkbox'
 import { useState } from 'react';
 
-export default function SelectableCard({ label, value = [], onChange }) {
-    const [isChecked, setChecked] = useState(value.includes(label))
+export default function SelectableCard({ label, subject, value = [], onChange }) {
+    const isChecked = value.some(s => s.idMateria === subject.idMateria);
 
     const toggleChecked = () => {
-        const newChecked = !isChecked
-        setChecked(newChecked)
-        if (newChecked) {
-          onChange([...value, label]) 
+        if (isChecked) {
+            // Quitar el objeto
+            onChange(value.filter(s => s.idMateria !== subject.idMateria));
         } else {
-          onChange(value.filter(item => item !== label)) 
+            // Añadir el objeto
+            onChange([...value, subject]);
         }
-    }
-    
-    useEffect(() => {
-        setChecked(value.includes(label))
-    }, [value])
+    };
 
     return (
         <Pressable 
             onPress={toggleChecked}
             className="flex-row items-center bg-secondary-light rounded-md px-4 py-3 mb-3 h-20"
         >
-        <Checkbox
-            value={isChecked}
-            onValueChange={toggleChecked}
-            className='bg-white border border-gray-200 rounded-lg' 
-        />
-        <Text className="ml-2 text-gray-900 font-medium">{label}</Text>
+            <Checkbox
+                value={isChecked}
+                onValueChange={toggleChecked}
+                className='bg-white border border-gray-200 rounded-lg' 
+            />
+            <Text className="ml-2 text-gray-900 font-medium">{label}</Text>
         </Pressable>
     )
 }

@@ -20,6 +20,7 @@ export default function PersonalForm() {
     typeUser: yup.string().required("El campo es requerido"),
     name: yup.string().required("El campo nombre es requerido"),
     lastName: yup.string().required("El campo apellido es requerido"),
+    email: yup.string().email("El email es invalido").required('El campo email es requerido'),
     userName: yup.string().required("El campo usuario es requerido"),
     password: yup.string()
       .min(6, 'Mínimo 6 caracteres')
@@ -39,14 +40,24 @@ export default function PersonalForm() {
             typeUser: '',
             name: '', 
             lastName: '', 
+            email: '',
             userName: '', 
             password: '', 
             confirmPassword: '' 
           }}
           validationSchema={RegisterSchema}
           onSubmit={(values) => {
-            setPersonalData(values);
-            console.log('Datos enviados:', values);
+            const fullTypeUser = typeUsers.find(item => item.value === values.typeUser);
+            setPersonalData({
+              ...values,
+              typeUser: fullTypeUser || null
+            });
+
+           
+            console.log('Datos enviados:', {
+              ...values,
+              typeUser: fullTypeUser || null
+            });
             router.replace('/auth/register/academicForm') 
           }}
         >
@@ -110,6 +121,15 @@ export default function PersonalForm() {
                     touched={touched.userName}
                   />
                   <SizedBox height={6}/>
+                  <InputField
+                    label={"Email"}
+                    placeholder={"Email"}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    value={values.email}
+                    error={errors.email}
+                    touched={touched.email}
+                  />
                   <InputField
                     label={"Contraseña"}
                     isPassword={true}
