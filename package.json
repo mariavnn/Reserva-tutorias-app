@@ -12,6 +12,7 @@
     "@expo/metro-runtime": "~4.0.1",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-picker/picker": "^2.9.0",
+    "axios": "^1.9.0",
     "expo": "~52.0.42",
     "expo-checkbox": "~4.0.1",
     "expo-constants": "~17.0.8",

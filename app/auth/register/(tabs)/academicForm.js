@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, ActivityIndicator } from 'react-native'
 import React from 'react'
 import DropdownInput from '../../../../components/DropdownInput'
 import { Formik } from 'formik';
@@ -12,15 +12,30 @@ import { useState } from 'react';
 import ConfirmRegisterModal from '../../../../components/modals/ConfirmRegisterModal';
 import { useRouter } from 'expo-router';
 import ConfirmModal from '../../../../components/modals/ConfirmModal';
+import { useUserTypeStore } from '../../../../store/useUserTypeStore';
+import { subjectService } from '../../../../service/subjectsService';
 
 export default function AcademicForm() {
-  const { setAcademicData } = useRegisterStore();
+  const { academicData, setAcademicData } = useRegisterStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const userType = useUserTypeStore(state => state.userType);
+  const containerHeight = userType === 'Estudiante' ? 'h-[70%]' : 'h-[82%]';
+  const [subjects, setSubjects] = useState([]);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+
+  
   const router = useRouter()
 
   const RegisterSchema = yup.object().shape({
-      academicLevel: yup.string().required(),
+      career: yup.object({
+        label: yup.string().required(),
+        value: yup.string().required()
+      }).nullable().required('Selecciona una carrera'),
+      academicLevel: yup.object({
+        label: yup.string().required(),
+        value: yup.string().required()
+      }).nullable().required('Selecciona un semestre'),
       subjects: yup.array().min(1, 'Selecciona al menos una materia'),
     });
 
@@ -37,20 +52,33 @@ export default function AcademicForm() {
     { label: '10mo Semestre', value: '10' }
   ]
 
-  const subjects = [
-    "Ingles III",
-    "Programacion Orientada a Objetos",
-    "Estadistica y Probabilidad",
-    "Calculo Integral",
-    "Mecanica",
-    "Electromagnetismo"
-  ];
+  const career = [
+    { label: 'Ingenieria en Sistemas', value: '1' },
+  ]
+
+  const handleGetSubject = async (idCareer ) => {
+    try{
+      
+      console.log('Id carrerar', idCareer);
+      setLoadingSubjects(true);
+      const response = await subjectService.getSubjectByIdCareer(idCareer);  
+      console.log('response', response);
+      setSubjects(response.data);
+    }catch(error){
+      console.error('Error al obtener materias:', error);
+      setSubjects([]); 
+    }finally{
+      setLoadingSubjects(false);
+    }
+  }
 
   return (
+    <>
     <View>
       <Formik
          initialValues={{
-          academicLevel: '', 
+          career: null, 
+          academicLevel: null, 
           subjects: [],
         }}
         validationSchema={RegisterSchema}
@@ -63,30 +91,58 @@ export default function AcademicForm() {
       >
         {({ handleChange, handleBlur, handleSubmit, setFieldValue, values, errors, touched }) => (
         <View className='w-full'>
-          <DropdownInput
-            label="Selecciona tu semestre actual"
-            selectedValue={values.academicLevel}
-            onValueChange={(item) => setFieldValue('academicLevel', item.label)}
-            items={semestres}
-            error={errors.academicLevel}
-            touched={touched.academicLevel}
-            disabled={false}
-          />
+          
+            <DropdownInput
+              label="Selecciona la carrera a la que perteneces"
+              selectedValue={values.career}
+              onValueChange={(value) => {
+                  setFieldValue('career', value);
+                  console.log('VALUE CAREER', value?.value)
+                  if (value?.value) {
+                    handleGetSubject(value.value);
+                  }
+                }}
+              items={career}
+              error={errors.career}
+              touched={touched.career}
+              disabled={false}
+            />
+            
+          
+          <SizedBox height={12}/>
+
+          { userType === "Estudiante" && (
+            <DropdownInput
+              label="Selecciona tu semestre actual"
+              selectedValue={values.academicLevel}
+              onValueChange={(value) => setFieldValue('academicLevel', value)}
+              items={semestres}
+              error={errors.academicLevel}
+              touched={touched.academicLevel}
+              disabled={false}
+            />
+          )}
 
           <SizedBox height={12}/>
 
-          <View className='h-[450px] py-2 pb-16'>
-            <ScrollView>
-              {
-                subjects.map((subject) => (
-                  <SelectableCard
-                    key={subject}
-                    label={subject}
-                    value={values.subjects}
-                    onChange={(newSubjects) => setFieldValue('subjects', newSubjects)}
-                  />
+          <View className={`${containerHeight} py-2 pb-16`}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {loadingSubjects ? (
+                  <ActivityIndicator size="large" color="#000" className="mt-6" />
+                ) : subjects.length === 0 ? (
+                    <Text className="text-center text-gray-500 mt-4">
+                      No hay materias disponibles
+                    </Text>
+                ) : (
+                  subjects.map((subject) => (
+                    <SelectableCard
+                      key={subject.id || subject}
+                      label={subject.name || subject}
+                      value={values.subjects}
+                      onChange={(newSubjects) => setFieldValue('subjects', newSubjects)}
+                    />
                 ))
-              }
+              )}
             </ScrollView>
           </View>
           
@@ -103,8 +159,9 @@ export default function AcademicForm() {
         
         )}
       </Formik>
-     
-      {
+    </View>
+
+     {
         modalVisible && (
           <ConfirmRegisterModal
             visible={modalVisible}
@@ -130,7 +187,6 @@ export default function AcademicForm() {
 
         )
       }
-    </View>
-    
+    </>
   )
 }

@@ -32,7 +32,6 @@ const mockUsers = [
  
 export default function LoginScreen() {
   const router = useRouter();
-  // const [userType, setUserType] = useState("Estudiante");
   const userType = useUserTypeStore(state => state.userType);
   const setUserType = useUserTypeStore(state => state.setUserType);
   const login = useLoginStore(state => state.login);

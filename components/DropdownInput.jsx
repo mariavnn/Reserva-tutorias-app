@@ -6,7 +6,8 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 
 
-export default function DropdownInput({ label, labelIcon, selectedValue, onValueChange, items, error, touched, disabled }) {
+export default function DropdownInput({ 
+  label, labelIcon, selectedValue, onValueChange, items, error, touched, disabled}) {
   return (
     <View className="w-full">
         {label && (
@@ -18,12 +19,12 @@ export default function DropdownInput({ label, labelIcon, selectedValue, onValue
         <Dropdown
             data={items}
             labelField="label"
-            valueField="label"
-            value={selectedValue}
+            valueField="value"
+            value={selectedValue?.value || null}
             placeholder={"Seleccionar..."}
             maxHeight={300}
             disable={disabled}
-            onChange={onValueChange}
+            onChange={item => onValueChange(item)} 
             placeholderStyle={{ color: '#9CA3AF' }} 
             selectedTextStyle={{ color: '#111827', fontWeight: '500' }} 
             inputSearchStyle={{

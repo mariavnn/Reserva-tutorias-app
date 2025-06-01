@@ -1,5 +1,5 @@
 import { View, Text, Keyboard, KeyboardAvoidingView, ScrollView, Platform, TouchableWithoutFeedback } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import InputField from '../../../../components/InputField'
 import SizedBox from '../../../../components/SizedBox'
 import * as yup from 'yup';
@@ -8,10 +8,13 @@ import GeneralButton from '../../../../components/GeneralButton';
 import DropdownInput from '../../../../components/DropdownInput';
 import useRegisterStore from '../../../../store/useRegisterStore';
 import { useRouter } from 'expo-router';
+import { useUserTypeStore } from '../../../../store/useUserTypeStore';
 
 export default function PersonalForm() {
   const { setPersonalData } = useRegisterStore();
   const router = useRouter();
+  const userType = useUserTypeStore(state => state.userType);
+  
 
   const RegisterSchema = yup.object().shape({
     typeUser: yup.string().required("El campo es requerido"),
@@ -47,7 +50,16 @@ export default function PersonalForm() {
             router.replace('/auth/register/academicForm') 
           }}
         >
-        {({ handleChange, handleBlur, handleSubmit,setFieldValue,  values, errors, touched }) => (
+        {({ handleChange, handleBlur, handleSubmit,setFieldValue,  values, errors, touched }) => { 
+          
+          useEffect(() => {
+            const mappedValue = userType === 'Estudiante' ? '1' : '2';
+            setFieldValue('typeUser', mappedValue);
+          }, [userType]);
+
+          const selectedItem = typeUsers.find(item => item.value === values.typeUser);
+          
+          return (
             <View className= "flex-1 w-full py-2">
                <ScrollView 
                 className=''
@@ -57,12 +69,14 @@ export default function PersonalForm() {
                 <View className = "h-5/6">
                   <DropdownInput
                     label="Eres estudiante o tutor"
-                    selectedValue={values.typeUser}
-                    onValueChange={(item) => setFieldValue('typeUser', item.label)}
+                    selectedValue={selectedItem?.label ?? ''}
+                    onValueChange={(item) => {
+                      setFieldValue('typeUser', item.value);
+                    }}
                     items={typeUsers}
                     error={errors.typeUser}
                     touched={touched.typeUser}
-                    disabled={false}
+                    disabled={true}
                     
                   />
                   <SizedBox height={20}/>
@@ -129,7 +143,7 @@ export default function PersonalForm() {
               
             </View>
 
-          )}
+        )}}
         </Formik>
 
   
