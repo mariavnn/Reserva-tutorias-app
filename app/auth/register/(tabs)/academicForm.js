@@ -35,7 +35,7 @@ export default function AcademicForm() {
       academicLevel: yup.object({
         label: yup.string().required(),
         value: yup.string().required()
-      }).nullable().required('Selecciona un semestre'),
+      }).nullable(),
       subjects: yup.array().min(1, 'Selecciona al menos una materia'),
     });
 
@@ -92,10 +92,14 @@ export default function AcademicForm() {
         }}
         validationSchema={RegisterSchema}
         onSubmit={(values) => {
+          if (userType === 'Estudiante' && !values.academicLevel) {
+            alert('Selecciona un semestre');
+            return;
+          }
           setAcademicData(values);
-          console.log('Datos enviados:', values);
           setModalVisible(true);
         }}
+
       
       >
         {({ handleChange, handleBlur, handleSubmit, setFieldValue, values, errors, touched }) => (

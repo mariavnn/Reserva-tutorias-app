@@ -20,7 +20,9 @@ export default function PersonalForm() {
     typeUser: yup.string().required("El campo es requerido"),
     name: yup.string().required("El campo nombre es requerido"),
     lastName: yup.string().required("El campo apellido es requerido"),
-    email: yup.string().email("El email es invalido").required('El campo email es requerido'),
+    email: yup.string()
+        .matches(/^[\w-.]+@unipamplona\.edu\.co$/, "El email debe ser institucional (@unipamplona.edu.co)")
+        .email("El email es invalido").required('El campo email es requerido'),
     userName: yup.string().required("El campo usuario es requerido"),
     password: yup.string()
       .min(6, 'Mínimo 6 caracteres')

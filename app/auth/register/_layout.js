@@ -50,6 +50,7 @@ export default function RegisterLayout() {
             onSelect={handleTabSelect}
             selectedTab={activeTab}
             key={pathname}
+            disabled={true}
           />
 
           {/* Aquí va el Stack con las pantallas de las tabs */}

@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-export default function SelectorTab({ tabs, onSelect, selectedTab }) {
+export default function SelectorTab({ tabs, onSelect, selectedTab, disabled = false }) {
   const TAB_WIDTH = Dimensions.get('window').width / tabs.length;
   const defaultSelectedTab = selectedTab || tabs[0];
 
@@ -31,6 +31,7 @@ export default function SelectorTab({ tabs, onSelect, selectedTab }) {
   }, [selectedTab, tabs]);
 
   const handleTabPress = (index, label) => {
+    if (disabled) return;
     setActiveIndex(index);
     animateUnderline(index);
     onSelect(label)
@@ -48,6 +49,7 @@ export default function SelectorTab({ tabs, onSelect, selectedTab }) {
         <TouchableOpacity
           key={index}
           activeOpacity={0.7}
+          disabled={disabled}
           onPress={() => handleTabPress(index, label)}
           style={{ width: TAB_WIDTH, alignItems: 'center' }}
         >

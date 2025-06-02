@@ -2,7 +2,7 @@ import { View, Text, Modal, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import useRegisterStore from '../../store/useRegisterStore';
 import GeneralButton from '../GeneralButton';
-import { registerService } from '../../service/registerService';
+import { authService, registerService } from '../../service/authService';
 
 export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
     const { personalData, academicData } = useRegisterStore();
@@ -18,7 +18,7 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
         user: personalData.userName.trim(),
         email: personalData.email.trim(),
         password: personalData.password,
-        semester: parseInt(academicData.academicLevel.value),
+        semester: academicData.academicLevel ? parseInt(academicData.academicLevel.value) : 1,
         subjects: subjectIds
         };
         return body;
@@ -29,7 +29,7 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
             setLoading(true);
             const body = prepareData();
             console.log('body', body);
-            const response = await registerService.registerUser(body);
+            const response = await authService.registerUser(body);
             console.log('REQUEST ', response);
             onConfirm();
         }catch(error){
@@ -50,8 +50,12 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
                     <Text><Text className="font-semibold">Nombre:</Text> {personalData.name} {personalData.lastName}</Text>
                     <Text><Text className="font-semibold">Email:</Text> {personalData.email}</Text>
                     <Text><Text className="font-semibold">Usuario:</Text> {personalData.userName}</Text>
-                    <Text><Text className="font-semibold">Carrera:</Text> {academicData.career.label}</Text>
-                    <Text><Text className="font-semibold">Semestre:</Text> {academicData.academicLevel.label}</Text>
+                    <Text><Text className="font-semibold">Carrera:</Text> {academicData.career?.label || ''}</Text>
+                    {academicData.academicLevel && (
+                        <Text>
+                            <Text className="font-semibold">Semestre:</Text> {academicData.academicLevel.label}
+                        </Text>
+                    )}
                     <Text className="font-semibold mt-2">Materias seleccionadas:</Text>
                     {academicData.subjects?.map((m, i) => (
                         <Text key={i}>• {m.nombreMateria}</Text>

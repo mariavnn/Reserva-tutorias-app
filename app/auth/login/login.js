@@ -14,6 +14,8 @@ import Entypo from '@expo/vector-icons/Entypo';
 import GeneralTitle from "../../../components/GeneralTitle";
 import { useLoginStore } from "../../../store/useLoginStore";
 import { useUserTypeStore } from "../../../store/useUserTypeStore";
+import { authService } from "../../../service/authService";
+import { jwtDecode } from "jwt-decode";
 
 const LoginSchema = yup.object().shape({
   username: yup
@@ -24,11 +26,6 @@ const LoginSchema = yup.object().shape({
     .required('La contraseña es obligatoria'),
 });
 
-
-const mockUsers = [
-  { username: 'mvnieto', password: 'victoria123', role: 'student' },
-  { username: 'tutorUser', password: 'tutor123', role: 'tutor' },
-];
  
 export default function LoginScreen() {
   const router = useRouter();
@@ -36,29 +33,69 @@ export default function LoginScreen() {
   const setUserType = useUserTypeStore(state => state.setUserType);
   const login = useLoginStore(state => state.login);
 
+  const validateToken = (token) => {
+    try {
+      const decoded = jwtDecode(token);
+      console.log('DECODED ', decoded)
+      const currentTime = Date.now() / 1000;
 
-  const handleAuth = (values) => {
-    const roleKey = userType === "Estudiante" ? "student" : "tutor";
-    const user = mockUsers.find(
-      u =>
-        u.username.toLowerCase() === values.username.toLowerCase() &&
-        u.password === values.password &&
-        u.role === roleKey
-    );
-
-    console.log("User", user);
-
-    if (user) {
-      login(user)
-      if (user.role === "student") {
-        router.push("/(authorized)/(student)/(tabs)");
-      } else if (user.role === "tutor") {
-        router.push("/(authorized)/(tutor)/(tabs)"); 
+      if (!decoded.exp || !decoded.role) {
+        throw new Error("Token inválido: falta información necesaria");
       }
-    } else {
-      alert("Credenciales inválidas o tipo de usuario incorrecto");
+
+      if (decoded.exp < currentTime) {
+        throw new Error("Token expirado");
+      }
+
+      return {
+        isValid: true,
+        role: decoded.role,
+      };
+    } catch (error) {
+      console.error('Error al validar el token');
+      return { isValid: false, error: error.message };
     }
-  }
+  };
+
+  const handleAuth = async (values) => {
+    try {
+      const data = {
+        username: values.username,
+        password: values.password,
+      };
+
+      // Guarda la respuesta completa, no solo data
+      const response = await authService.loginUser(data);
+
+      // Extrae el token del header 'authorization' (verifica que existe)
+      const token = response['authorization'];
+      console.log('TOKEN ', token)
+
+      if (!token) {
+        throw new Error("Token no recibido en la respuesta");
+      }
+
+      const decoded = validateToken(token);
+
+      console.log("DECODED ", decoded);
+
+      if (decoded.isValid) {
+        if (decoded.role === "estudiante") {
+          router.push("/(authorized)/(student)/(tabs)");
+        } else if (decoded.role === "profesor") {
+          router.push("/(authorized)/(tutor)/(tabs)");
+        } else {
+          alert("Rol no reconocido.");
+        }
+      } else {
+        alert(`Token inválido: ${decoded.error}`);
+      }
+    } catch (error) {
+      console.error("Error en login:", error);
+      alert("Credenciales inválidas o error en el servidor.");
+    }
+  };
+
 
   return (
     <Screen>
