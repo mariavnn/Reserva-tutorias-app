@@ -40,8 +40,9 @@ export default function InputField({
         {icon && <View className="mr-2">{icon}</View>}
 
         <TextInput 
+          style={{ minHeight: 40 }}
           placeholder={placeholder} 
-          className="flex-1 text-gray-800 h-8"
+          className="flex-1 text-gray-800"
           secureTextEntry={isPassword && !showPassword}
           keyboardType={getKeyboardType()}
           {...props} 
