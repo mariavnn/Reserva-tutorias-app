@@ -11,9 +11,9 @@ import { useRouter } from 'expo-router';
 import { useUserTypeStore } from '../../../../store/useUserTypeStore';
 
 export default function PersonalForm() {
-  const { setPersonalData } = useRegisterStore();
+  const { personalData, setPersonalData } = useRegisterStore();
   const router = useRouter();
-  const userType = useUserTypeStore(state => state.userType);
+  const {userType, setUserType} = useUserTypeStore();
   
 
   const RegisterSchema = yup.object().shape({
@@ -39,13 +39,13 @@ export default function PersonalForm() {
   return (
         <Formik
           initialValues={{
-            typeUser: '',
-            name: '', 
-            lastName: '', 
-            email: '',
-            userName: '', 
-            password: '', 
-            confirmPassword: '' 
+            typeUser: personalData?.typeUser?.value || '',
+            name: personalData?.name || '',
+            lastName: personalData?.lastName || '',
+            email: personalData?.email || '',
+            userName: personalData?.userName || '',
+            password: personalData?.password || '',
+            confirmPassword: personalData?.confirmPassword || '',
           }}
           validationSchema={RegisterSchema}
           onSubmit={(values) => {
@@ -82,14 +82,15 @@ export default function PersonalForm() {
                 <View className = "h-5/6">
                   <DropdownInput
                     label="Eres estudiante o tutor"
-                    selectedValue={selectedItem?.label ?? ''}
+                    selectedValue={values.typeUser}
                     onValueChange={(item) => {
-                      setFieldValue('typeUser', item.value);
+                      setFieldValue('typeUser', item.label)
+                      setUserType(item.label);
                     }}
                     items={typeUsers}
                     error={errors.typeUser}
                     touched={touched.typeUser}
-                    disabled={true}
+                    disabled={false}
                     
                   />
                   <SizedBox height={20}/>

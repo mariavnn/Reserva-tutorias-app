@@ -36,7 +36,13 @@ export default function RegisterLayout() {
           
           <View className="w-full px-4 mt-2 flex-row items-center">
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => {
+                if (pathname.includes('academicForm')) {
+                  router.replace('/auth/register/(tabs)/personalForm');
+                } else {
+                  router.back();
+                }
+              }}
               className="bg-primary-light dark:bg-primary-dark rounded-full w-10 h-10 flex items-center justify-center"
             >
               <AntDesign name="left" size={23} color="white" />
@@ -44,7 +50,6 @@ export default function RegisterLayout() {
           </View>
           <GeneralTitle type="primary" label="Registro" className="mt-4 mb-6" />
 
-          {/* Selector de Tabs */}
           <SelectorTab
             tabs={['Información Personal', 'Información Académica']}
             onSelect={handleTabSelect}
@@ -53,11 +58,10 @@ export default function RegisterLayout() {
             disabled={true}
           />
 
-          {/* Aquí va el Stack con las pantallas de las tabs */}
           <View className="flex-1 w-full mt-10">
             <Stack
               screenOptions={{
-                headerShown: false, // Header customizado ya lo tenés arriba
+                headerShown: false,
               }}
             />
           </View>

@@ -56,22 +56,10 @@ export default function AcademicForm() {
     { label: 'Ingenieria en Sistemas', value: '1' },
   ]
 
-  //   const subjects = [
-  //   "Ingles III",
-  //   "Programacion Orientada a Objetos",
-  //   "Estadistica y Probabilidad",
-  //   "Calculo Integral",
-  //   "Mecanica",
-  //   "Electromagnetismo"
-  // ];
-
   const handleGetSubject = async (idCareer ) => {
     try{
-      
-      console.log('Id carrerar', idCareer);
       setLoadingSubjects(true);
       const response = await subjectService.getSubjectByIdCareer(idCareer);  
-      console.log('response', response);
       setSubjects(response);
     }catch(error){
       console.error('Error al obtener materias:', error);
@@ -86,9 +74,9 @@ export default function AcademicForm() {
     <View>
       <Formik
          initialValues={{
-          career: null, 
-          academicLevel: null, 
-          subjects: [],
+          career: academicData?.career || null,
+          academicLevel: academicData?.academicLevel || null,
+          subjects: academicData?.subjects || [],
         }}
         validationSchema={RegisterSchema}
         onSubmit={(values) => {

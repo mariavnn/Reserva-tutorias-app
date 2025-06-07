@@ -5,7 +5,7 @@ import GeneralButton from '../GeneralButton';
 import { authService, registerService } from '../../service/authService';
 
 export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
-    const { personalData, academicData } = useRegisterStore();
+    const { personalData, academicData, clearData } = useRegisterStore();
     const [loading, setLoading] = useState(false);
     
     const subjectIds = academicData.subjects.map(s => s.idMateria);
@@ -28,10 +28,9 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
         try{
             setLoading(true);
             const body = prepareData();
-            console.log('body', body);
             const response = await authService.registerUser(body);
-            console.log('REQUEST ', response);
             onConfirm();
+            clearData();
         }catch(error){
             console.log('Error ', error);
             console.log(error);

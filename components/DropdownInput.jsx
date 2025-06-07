@@ -19,7 +19,7 @@ export default function DropdownInput({
         <Dropdown
             data={items}
             labelField="label"
-            valueField="label"
+            valueField="value"
             value={selectedValue}
             placeholder={"Seleccionar..."}
             maxHeight={300}

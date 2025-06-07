@@ -5,6 +5,7 @@ const useRegisterStore = create((set) => ({
   academicData: {},
   setPersonalData: (data) => set({ personalData: data }),
   setAcademicData: (data) => set({ academicData: data }),
+  clearData: () => set({ personalData: null, academicData: null }),
 }));
 
 export default useRegisterStore;
