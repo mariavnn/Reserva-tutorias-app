@@ -12,54 +12,18 @@ import ConfirmReservaModal from '../../../../components/modals/ConfirmReservaMod
 import ConfirmCancelModal from '../../../../components/modals/ConfirmCancelModal';
 import { router } from 'expo-router';
 import { scheduleService } from '../../../../service/scheduleService';
-import { useTutorStore } from '../../../../store/useTutorStore';
+import { useTutoriaStore } from '../../../../store/useTutoriasStore';
 
 const TutoriasStudent = () => {
   const [selectedTab, setSelectedTab] = useState('Disponibles');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalCancel, setModalCancel] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const mapToSessionCardData = (horarios = []) =>
-    horarios
-      .slice() // para no mutar el array original
-      .sort((a, b) => new Date(a.fechaHorario) - new Date(b.fechaHorario))
-      .map((horario) => ({
-        id: horario.idHorario,
-        title: `${horario.materia.nombreMateria}`,
-        tutor: `Tutor ${horario.usuario.nombre} ${horario.usuario.apellido}`,
-        description: horario.descripcion,
-        starTime: horario.horaInicio.substring(0, 5),
-        endTime: horario.horaFin.substring(0, 5),
-        current: horario.agendados?.length ?? 0,
-        max: 5,
-        status: horario.modo === 'DISPONIBLE' ? 'Disponible' : 'Agendada',
-        mode: horario.tipo,
-        date: horario.fechaHorario,
-        location: horario.salon
-          ? `${horario.salon.descripcion ? horario.salon.descripcion + ' - ' : ''}${horario.salon.ubicacion} (${horario.salon.bloque?.seccion})`
-          : null,
-      }));
+  const { sesiones, loading, error, loadAvailableTutorings } = useTutoriaStore();
 
-
-  const loadAvailableTutorings = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { message, data } = await scheduleService.getScheduleWithFilters({
-        subjectIds: [4, 2, 5, 6, 1],
-        mode: 'DISPONIBLE',
-      });
-      setSessions(mapToSessionCardData(data));
-      console.log(message, data);
-    } catch (err) {
-      console.error('Error al cargar tutorías:', err);
-      setError('Error al cargar las tutorías disponibles');
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    loadAvailableTutorings();
   }, []);
 
   useEffect(() => {
@@ -69,7 +33,7 @@ const TutoriasStudent = () => {
     // Aquí podrías cargar agendadas o historial en el futuro
   }, [selectedTab, loadAvailableTutorings]);
 
-  const filteredSessions = sessions.filter((session) => {
+  const filteredSessions = sesiones.filter((session) => {
     if (selectedTab === 'Disponibles') return session.status === 'Disponible';
     if (selectedTab === 'Agendadas') return session.status === 'Agendada';
     return false; // Para el caso de 'Historial'
@@ -172,7 +136,6 @@ const TutoriasStudent = () => {
         data={selectedSession}
         onClose={() => setModalCancel(false)}
         onConfirm={() => {
-          setSessions((prev) => prev.filter((s) => s.id !== selectedSession.id));
           setModalCancel(false);
         }}
       />

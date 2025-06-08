@@ -11,7 +11,7 @@ export default function PopularTutorias({ data }) {
       <View className="flex-row justify-between items-start">
         <Text className="text-base font-semibold flex-1">{data.title}</Text>
         <TouchableOpacity >
-          <FontAwesome name="heart-o" size={18} color="#3B82F6" />
+          {/* <FontAwesome name="heart-o" size={18} color="#3B82F6" /> */}
         </TouchableOpacity>
       </View>
 
