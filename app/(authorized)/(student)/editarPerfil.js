@@ -1,8 +1,8 @@
-import EditarPerfilComp from "../../../components/EditarPerfil";
+import EditarInterfaz from "../../../shared/editarPerfil";
 
 
 export default function EditarPerfil() {
     return (
-       <EditarPerfilComp/>
+       <EditarInterfaz/>
     )
 }

@@ -9,49 +9,12 @@ import MateriasContainer from '../../../../components/MateriasContainer';
 import { useRouter } from 'expo-router';
 import PerfilInterfaz from '../../../../shared/perfil';
 import { userInfoService } from '../../../../service/infoUser';
-
-const materias = [
-  { label: 'Programación', value: '1' },
-  { label: 'Matemáticas', value: '2' },
-  { label: 'Mecánica', value: '3' },
-]
+import { useUserStore } from '../../../../store/useUserStore';
 
 export default function PerfilTutor() {
-  const [userInfo, setUserInfo] = useState();
-  const [loading, setLoading] = useState(false);
   
-
-  const handleInfo = async () => {
-    try{
-      const user = await userInfoService.getUserInfo();
-      setUserInfo(user);
-    }catch (error){
-      console.log('Error ', error);
-    }
-  }
-
-  useEffect(() => {
-    handleInfo()
-  }, [])
-
-  
-  if (loading) {
-     return (
-       <ActivityIndicator/>
-     );
-  }
- 
-  if (!userInfo) {
-     return (
-       <View className="flex-1 justify-center items-center">
-         <Text>No se pudo cargar la información del perfil.</Text>
-       </View>
-     );
-  }
 
   return (
-    <PerfilInterfaz 
-      data={userInfo}        
-    />
+    <PerfilInterfaz />
   )
 }

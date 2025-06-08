@@ -12,14 +12,14 @@ import { useState } from 'react';
 import ConfirmRegisterModal from '../../../../components/modals/ConfirmRegisterModal';
 import { useRouter } from 'expo-router';
 import ConfirmModal from '../../../../components/modals/ConfirmModal';
-import { useUserTypeStore } from '../../../../store/useUserTypeStore';
 import { subjectService } from '../../../../service/subjectsService';
+import { useUserStore } from '../../../../store/useUserStore';
 
 export default function AcademicForm() {
   const { academicData, setAcademicData } = useRegisterStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
-  const userType = useUserTypeStore(state => state.userType);
+  const userType = useUserStore(state => state.userType);
   const containerHeight = userType === 'Estudiante' ? 'h-[70%]' : 'h-[82%]';
   const [subjects, setSubjects] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);

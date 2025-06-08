@@ -9,9 +9,17 @@ export const userInfoService = {
             const response = await axios.get(`${API_URL}/usuarios/${userId}`)
             return response.data;
         }catch(error){
-            console.log('Error al obtener la lista de materias ', error)
             throw error
         }
 
+    },
+
+    async getCareer (){
+        try{
+            const response = await axios.get(`${API_URL}/carreras`)
+            return response.data;
+        }catch(error){
+            throw error
+        }
     }
 }

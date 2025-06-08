@@ -8,12 +8,12 @@ import GeneralButton from '../../../../components/GeneralButton';
 import DropdownInput from '../../../../components/DropdownInput';
 import useRegisterStore from '../../../../store/useRegisterStore';
 import { useRouter } from 'expo-router';
-import { useUserTypeStore } from '../../../../store/useUserTypeStore';
+import { useUserStore } from '../../../../store/useUserStore';
 
 export default function PersonalForm() {
   const { personalData, setPersonalData } = useRegisterStore();
   const router = useRouter();
-  const {userType, setUserType} = useUserTypeStore();
+  const {userType, setUserType} = useUserStore();
   
 
   const RegisterSchema = yup.object().shape({

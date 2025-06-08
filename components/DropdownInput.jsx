@@ -7,7 +7,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 
 
 export default function DropdownInput({ 
-  label, labelIcon, selectedValue, onValueChange, items, error, touched, disabled}) {
+  label, placeholder = "Selecciona...", labelIcon, selectedValue, onValueChange, items, error, touched, disabled}) {
   return (
     <View className="w-full">
         {label && (
@@ -21,7 +21,7 @@ export default function DropdownInput({
             labelField="label"
             valueField="value"
             value={selectedValue}
-            placeholder={"Seleccionar..."}
+            placeholder={placeholder}
             maxHeight={300}
             disable={disabled}
             onChange={item => onValueChange(item)} 
