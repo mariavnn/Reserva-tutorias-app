@@ -8,6 +8,8 @@ export const useUserStore = create((set) => ({
   setUserInfo: (info) => set({ userInfo: info }),
 
   career: null,
-  setCareer: (career) => set({ career })
+  setCareer: (career) => set({ career }),
 
+  editedPassword: null,
+  setEditedPassword: (password) => set({ editedPassword: password }),
 }));

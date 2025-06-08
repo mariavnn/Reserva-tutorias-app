@@ -50,7 +50,7 @@ export default function TutoresDisponibles() {
         <View className='w-full flex-1 px-4'>
             <View className="w-full flex-row items-center mt-2">
                 <TouchableOpacity onPress={() => router.back()}>
-                    <View className="p-3 rounded-full bg-blue-500 justify-center items-center mr-2">
+                    <View className="p-2 rounded-full bg-blue-500 justify-center items-center mr-2">
                         <FontAwesome name="arrow-left" size={16} color="white" />
                     </View>
                 </TouchableOpacity>

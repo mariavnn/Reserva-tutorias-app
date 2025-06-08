@@ -7,6 +7,7 @@ import { ScrollView } from 'react-native'
 import TutorCard from '../../../../components/TutorCard'
 import { TouchableOpacity } from 'react-native'
 import PopularTutorias from '../../../../components/PopularTutorias'
+import { useRouter } from 'expo-router'
 
 const mockTutors = [
   {
@@ -52,6 +53,8 @@ const sessions = [
 
 
 export default function HomeStudent() {
+  const router = useRouter();
+
   return (
     <Screen>
       <View className='w-full flex-1 px-4'>
@@ -66,7 +69,7 @@ export default function HomeStudent() {
         <View className= "w-full h-1/3 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutores Populares</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
+            <TouchableOpacity onPress={() => router.push("../tutoresDisponibles")}>
               <Text className="text-sm text-gray-500 dark:text-text-dark-secondary font-semibold underline ">
                 Ver Todo
               </Text>
@@ -93,7 +96,7 @@ export default function HomeStudent() {
         <View className= "w-full h-2/5 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutorias Populares</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
+            <TouchableOpacity onPress={() => router.push("/app/(authorized)/(student)/tutoresDisponibles.js")}>
               <Text className="text-sm text-gray-500 dark:text-text-dark-secondary font-semibold underline ">
                 Ver Todo
               </Text>
