@@ -1,10 +1,12 @@
 import axios from "axios"
 import { API_URL } from "../constants/API"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const scheduleService = {
-  async getInfo(idUsuario) {
+  async getInfo() {
     try {
-      const response = await axios.get(`${API_URL}/horarios/usuario/${idUsuario}`)
+      const userId = await AsyncStorage.getItem('UserId');
+      const response = await axios.get(`${API_URL}/horarios/usuario/${userId}`)
       return response.data
     } catch (error) {
       console.log('Error al obtener la lista información', error)

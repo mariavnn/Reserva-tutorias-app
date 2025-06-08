@@ -25,6 +25,7 @@ const mapToSessionCardData = (horarios = []) =>
 
 export const useTutoriaStore = create((set) => ({
   sesiones: [],
+  tutoriasProfesor: [],
   loading: false,
   error: null,
 
@@ -48,6 +49,42 @@ export const useTutoriaStore = create((set) => ({
     } catch (err) {
       console.error('Error al cargar tutorías:', err);
       set({ error: 'Error al cargar las tutorías disponibles' });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  loadUserTutorings: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await scheduleService.getInfo();
+      const formattedTutorias = (response || [])
+        .map(tutoria => {
+          const fechaObj = new Date(tutoria.fechaHorario);
+          return {
+            id: tutoria.idHorario,
+            nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
+            fecha: fechaObj,
+            fechaFormatted: fechaObj.toLocaleDateString(),
+            horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
+            descripcion: tutoria.descripcion,
+            ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
+            modo: tutoria.modo,
+            tipo: tutoria.tipo,
+            idUsuario: tutoria.usuario?.idUsuario ?? null,
+            agendados: tutoria.agendados ?? [],
+          };
+        })
+        .sort((a, b) => a.fecha - b.fecha)
+        .map(tutoria => ({
+          ...tutoria,
+          fecha: tutoria.fechaFormatted,
+        }));
+
+      set({ tutoriasProfesor: formattedTutorias });
+    } catch (error) {
+      console.error('Error cargando tutorías del usuario:', error);
+      set({ error: 'Error al cargar tus tutorías' });
     } finally {
       set({ loading: false });
     }
