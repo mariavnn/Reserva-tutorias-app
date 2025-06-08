@@ -5,13 +5,12 @@ import SizedBox from '../../../../components/SizedBox'
 import TutoriasCard from '../../../../components/tutoriasCard'
 import { Screen } from '../../../../components/Screen'
 import { scheduleService } from '../../../../service/scheduleService'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import SuccessModal from '../../../../components/modals/SuccessModal'
 import ConfirmModal2 from '../../../../components/modals/ConfirmModal2'
-import EditTutoriaModal from '../../../../components/modals/EditTutorias'
+import EditarTutoriaTutor from '../editarTutorias'
+import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 
 export default function HomeTutor() {
-  const [tutorias, setTutorias] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
@@ -19,40 +18,16 @@ export default function HomeTutor() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
-
-  const loadData = useCallback(async () => {
-    try {
-      const userId = await AsyncStorage.getItem('UserId');
-      if (!userId) return;
-
-      const response = await scheduleService.getInfo(userId);
-      const formattedTutorias = (response || []).map(tutoria => ({
-        id: tutoria.idHorario,
-        nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
-        fecha: new Date(tutoria.fechaHorario).toLocaleDateString(),
-        horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
-        descripcion: tutoria.descripcion,
-        ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
-        modo: tutoria.modo,
-        tipo: tutoria.tipo,
-        idUsuario: tutoria.usuario?.idUsuario ?? null,
-        agendados: tutoria.agendados ?? []
-      }));
-
-      setTutorias(formattedTutorias);
-    } catch (error) {
-      console.error('Error cargando las tutorías:', error);
-    }
-  }, []);
+  const { loadUserTutorings, tutoriasProfesor, loading } = useTutoriaStore();
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadUserTutorings();
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadData().then(() => setRefreshing(false));
-  }, [loadData]);
+    loadUserTutorings().then(() => setRefreshing(false));
+  }, [loadUserTutorings]);
 
   const handleDelete = async () => {
     try {
@@ -60,7 +35,7 @@ export default function HomeTutor() {
       setSuccessMessage('Tutoría eliminada exitosamente');
       setSuccessVisible(true);
       setConfirmVisible(false);
-      loadData();
+      loadUserTutorings();
     } catch (error) {
       console.error('Error al eliminar la tutoría', error);
     }
@@ -78,7 +53,7 @@ export default function HomeTutor() {
     loadData();
   };
 
- const handleCloseEdit = () => {
+  const handleCloseEdit = () => {
     setEditVisible(false);
     setSelectedTutoriaId(null);
   };
@@ -98,14 +73,14 @@ export default function HomeTutor() {
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          {tutorias.length === 0 ? (
+          {tutoriasProfesor.length === 0 ? (
             <View className="flex-1 w-full justify-center">
               <Text className="text-gray-500 text-center text-lg">
                 No tienes tutorías disponibles por el momento
               </Text>
             </View>
           ) : (
-            tutorias.map((tutoria) => (
+            tutoriasProfesor.map((tutoria) => (
               <TutoriasCard
                 key={tutoria.id}
                 tutoriaInfo={tutoria}
@@ -128,14 +103,14 @@ export default function HomeTutor() {
         />
 
         {/* Success Modal */}
-        <SuccessModal 
+        <SuccessModal
           visible={successVisible}
           onClose={() => setSuccessVisible(false)}
           message={successMessage}
         />
 
         {/* Edit Modal */}
-        <EditTutoriaModal
+        <EditarTutoriaTutor
           visible={editVisible}
           onClose={handleCloseEdit}
           tutoriaId={selectedTutoriaId}

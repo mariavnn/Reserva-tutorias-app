@@ -34,7 +34,7 @@ export default function ConfirmReservaModal({ visible, onClose, onConfirm, data}
             <View className="flex-row items-center mt-1">
                 <FontAwesome6 name="clock" size={18} color="black" />
                 <Text className="text-sm text-gray-600 ml-1">
-                    Ahora, hasta {data.endTime}
+                    {data.starTime}, hasta {data.endTime}
                 </Text>
             </View>
           </View>

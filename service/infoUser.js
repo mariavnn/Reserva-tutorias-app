@@ -35,4 +35,15 @@ export const userInfoService = {
       throw error;
     }
   },
-};
+  
+  async getProfesoresCompatibles() {
+    try {
+      const userId = await AsyncStorage.getItem('UserId');
+      const response = await axios.get(`${API_URL}/usuarios/profesores-compatibles/${userId}`)
+      return response.data;
+    } catch (error) {
+      console.log('Error al obtener la lista de materias ', error)
+      throw error
+    }
+  },
+}
