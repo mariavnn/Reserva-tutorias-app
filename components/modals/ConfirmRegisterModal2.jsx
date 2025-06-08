@@ -18,6 +18,8 @@ export default function ConfirmRegisterModal2({
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  console.log('DATA ', data);
+
   const handleOnConfirm = async (data) => {
     setLoading(true);
     try {

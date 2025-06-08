@@ -106,7 +106,8 @@ export default function EditarInterfaz() {
           values,
           errors,
           touched,
-          resetForm
+          resetForm,
+          setFieldValue 
         }) => {
           
           const isFormEmpty =
@@ -173,7 +174,7 @@ export default function EditarInterfaz() {
                   </View>
                   <SizedBox height={18}/>
 
-                  <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
+                  {/* <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
                     <Text className="text-black text-lg font-bold mb-3">
                       Información Académica
                     </Text>
@@ -224,7 +225,7 @@ export default function EditarInterfaz() {
                       </View>
                     
                     </View>
-                  </View>
+                  </View> */}
 
                   <SizedBox height={24}/>
                 </ScrollView>
