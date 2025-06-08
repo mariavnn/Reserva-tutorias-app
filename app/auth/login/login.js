@@ -14,10 +14,12 @@ import Entypo from '@expo/vector-icons/Entypo';
 import GeneralTitle from "../../../components/GeneralTitle";
 import { useLoginStore } from "../../../store/useLoginStore";
 import { useUserTypeStore } from "../../../store/useUserTypeStore";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from "../../../service/authService";
 import { jwtDecode } from "jwt-decode";
 import useRegisterStore from "../../../store/useRegisterStore";
 import { BlurView } from "expo-blur";
+import LoadingIndicator from "../../../components/LoadingIndicator";
 
 const LoginSchema = yup.object().shape({
   username: yup
@@ -57,6 +59,7 @@ export default function LoginScreen() {
       return {
         isValid: true,
         role: decoded.role,
+        userId: decoded.userId
       };
     } catch (error) {
       return { isValid: false, error: error.message };
@@ -81,7 +84,7 @@ export default function LoginScreen() {
 
       const decoded = validateToken(token);
 
-      console.log('role ', decoded.role)
+      await AsyncStorage.setItem('UserId', String(decoded.userId));
 
       if (decoded.isValid) {
         if (decoded.role === "estudiante") {
@@ -183,11 +186,7 @@ export default function LoginScreen() {
       </View>
 
       {loading && (
-        <Modal transparent animationType="fade">
-          <BlurView intensity={50} tint="light" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#0000ff" />
-          </BlurView>
-        </Modal>
+       <LoadingIndicator/>
       )}
 
     </Screen>

@@ -55,11 +55,6 @@ export default function PersonalForm() {
               typeUser: fullTypeUser || null
             });
 
-           
-            console.log('Datos enviados:', {
-              ...values,
-              typeUser: fullTypeUser || null
-            });
             router.replace('/auth/register/academicForm') 
           }}
         >

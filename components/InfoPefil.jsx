@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import MateriasContainer from './MateriasContainer';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -19,8 +19,8 @@ export default function InfoPefil({userType, data}) {
         {isTutor ? (
           <>
             <View className="flex-row flex-wrap gap-2 mb-4">
-              {data.map((materia) => (
-                <MateriasContainer key={materia.value} label={materia.label} />
+              {data.subjectUsers.map((materia) => (
+                <MateriasContainer key={materia.subjectId} label={materia.subjectName} />
               ))}
             </View>
   
@@ -31,7 +31,7 @@ export default function InfoPefil({userType, data}) {
               </View>
   
               <View className="justify-center items-center w-1/3">
-                <Text className="text-3xl font-semibold">4.8</Text>
+                <Text className="text-3xl font-semibold">{data.averageRating}</Text>
                 <Text className="text-gray-500 text-sm text-center">Calificación Promedio</Text>
               </View>
             </View>
@@ -40,23 +40,26 @@ export default function InfoPefil({userType, data}) {
           <>
             <View className="mb-2">
               <Text className="text-gray-500">Carrera:</Text>
-              <Text className="font-medium">Ingeniería De Sistemas</Text>
+              <Text className="font-medium">{data.career.careerName}</Text>
             </View>
   
             <View className="mb-2">
               <Text className="text-gray-500">Semestre:</Text>
-              <Text className="font-medium">6to Semestre</Text>
+              <Text className="font-medium">{data.semester}</Text>
             </View>
   
             <View className="mb-2">
               <Text className="text-gray-500">Intereses:</Text>
             </View>
-  
-            <View className="flex-row flex-wrap gap-2">
-              {data.map((item) => (
-                <MateriasContainer key={item.value} label={item.label} />
-              ))}
-            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="w-full">
+              <View className="flex-row gap-2">
+                {data.subjectUsers.map((item) => (
+                  <MateriasContainer key={item.subjectId} label={item.subjectName} />
+                ))}
+              </View>
+            </ScrollView>
+
           </>
         )}
       </View>

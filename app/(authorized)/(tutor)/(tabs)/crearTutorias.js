@@ -105,7 +105,6 @@ export default function CrearTutoriasTutor() {
             onSubmit={values => {
               setTutoriaData(values);
               setModalVisible(true);
-              console.log(values);
             }}
           
           >

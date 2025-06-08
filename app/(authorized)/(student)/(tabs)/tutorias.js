@@ -136,7 +136,6 @@ export default function TutoriasStudent() {
           data={selectedSession}
           onClose={() => setModalVisible(false)}
           onConfirm={() => {
-            console.log("Confirmado:", selectedSession.title);
             setModalVisible(false);
           }}
         
