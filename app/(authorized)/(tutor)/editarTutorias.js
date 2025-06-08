@@ -529,7 +529,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
 
                     {/* Footer buttons */}
                     <View className="px-4 py-6 border-t border-gray-200">
-                      <View className="flex-row space-x-3">
+                      <View className="flex-row gap-4">
                         <View className="flex-1">
                           <GeneralButton
                             title="Cancelar"

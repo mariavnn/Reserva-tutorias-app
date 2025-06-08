@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import SearchBar from '../../../../components/SearchBar'
@@ -7,41 +7,8 @@ import { ScrollView } from 'react-native'
 import TutorCard from '../../../../components/TutorCard'
 import { TouchableOpacity } from 'react-native'
 import PopularTutorias from '../../../../components/PopularTutorias'
-
-const mockTutors = [
-  {
-    id: 1,
-    name: "Prof. López",
-    subject: "Programación",
-    rating: 5,
-    tags: ["SQL", "MongoDB", "PostgreSQL"],
-    available: "Mar-Jue, 12:00-18:00",
-  },
-  {
-    id: 2,
-    name: "Prof. Martínez",
-    subject: "Matemáticas",
-    rating: 4,
-    tags: ["SQL", "MongoDB", "PostgreSQL"],
-    available: "Mar-Jue, 12:00-18:00",
-  },
-  {
-    id: 3,
-    name: "Prof. Ramírez",
-    subject: "Física",
-    rating: 5,
-    tags: ["SQL", "MongoDB", "PostgreSQL"],
-    available: "Mar-Jue, 12:00-18:00",
-  },
-  {
-    id: 4,
-    name: "Prof. Torres",
-    subject: "Química",
-    rating: 3,
-    tags: ["SQL", "MongoDB", "PostgreSQL"],
-    available: "Mar-Jue, 12:00-18:00",
-  },
-];
+import { router } from 'expo-router'
+import { useTutorStore } from '../../../../store/useTutorStore'
 
 const sessions = [
   { id: 1, title: "Consultas de Programación", tutor: "Prof. López" },
@@ -50,8 +17,13 @@ const sessions = [
   { id: 4, title: "Consultas de Programación", tutor: "Prof. López" },
 ];
 
-
 export default function HomeStudent() {
+  const { fetchTutores, tutores, loading, error} = useTutorStore();
+
+  useEffect(()=> {
+    fetchTutores();
+  }, [])
+
   return (
     <Screen>
       <View className='w-full flex-1 px-4'>
@@ -61,12 +33,12 @@ export default function HomeStudent() {
           className='!text-blue-500 mt-4'
         />
         <Text className='text-gray-500 mt-2'>Aprende con tus tutores favoritos</Text>
-        <SearchBar/>
+        {/* <SearchBar/> */}
 
-        <View className= "w-full h-1/3 mt-5">
+        <View className= "w-full h-2/5 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutores Populares</Text>
-            <TouchableOpacity onPress={() => router.push("/auth/register")}>
+            <TouchableOpacity onPress={() => router.push("/(authorized)/(student)/tutoresDisponibles")}>
               <Text className="text-sm text-gray-500 dark:text-text-dark-secondary font-semibold underline ">
                 Ver Todo
               </Text>
@@ -75,22 +47,20 @@ export default function HomeStudent() {
 
           <ScrollView>
             {
-              mockTutors.map((tutor) => {
+              tutores.map((tutor) => {
                 return (
                   <TutorCard
                     key={tutor.id}
                     data={tutor}
-                  
                   />
                 )
-              })
-               
+              })   
             }
 
           </ScrollView>
         </View>
 
-        <View className= "w-full h-2/5 mt-5">
+        <View className= "w-full h-2/4 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutorias Populares</Text>
             <TouchableOpacity onPress={() => router.push("/auth/register")}>
@@ -111,18 +81,12 @@ export default function HomeStudent() {
                     
                     />
                   )
-                })
-                
+                })          
               }
-
             </View>
-           
-
           </ScrollView>
         </View>
-
-      </View>
-     
+      </View>  
     </Screen>
   )
 }
