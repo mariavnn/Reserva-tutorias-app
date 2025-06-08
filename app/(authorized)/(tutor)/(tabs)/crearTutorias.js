@@ -71,6 +71,7 @@ const getDayOfWeekFromDate = (dateString) => {
 
 export default function CrearTutoriasTutor() {
   const { setTutoriaData } = useCreateTutoriaStore();
+  const [tutoriasDataLocal, setTutoriasDataLocal] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedModality, setSelectedModality] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
@@ -343,22 +344,28 @@ export default function CrearTutoriasTutor() {
             // }}
             onSubmit={async (values, { setSubmitting }) => {
               try {
+                console.log('Valores del formulario:', values);
+
+                // 1. Construir los datos correctamente formateados
                 const tutoriaData = buildTutoriaData(values);
+                console.log('Datos formateados:', tutoriaData);
+
+                // 2. Agregar el userId (asegúrate de que esté disponible)
                 const completeData = {
                   ...tutoriaData,
-                  userId: await AsyncStorage.getItem('UserId')
+                  userId: await AsyncStorage.getItem('UserId') // O tu método para obtener el ID
                 };
+                console.log('Datos completos con userId:', completeData);
 
-                // Hacer el POST directamente
-                const response = await scheduleService.postSchedule(completeData);
-                console.log('Tutoría creada:', response);
+                // 3. Guardar en el estado local para el modal
+                setTutoriasDataLocal(completeData);
 
-                // Mostrar modal de éxito
+                // 4. Mostrar modal de confirmación
                 setModalVisible(true);
-                setSubmitting(false);
               } catch (error) {
-                console.error('Error al crear tutoría:', error);
-                alert('Error al crear tutoría: ' + error.message);
+                console.error('Error al preparar datos:', error);
+                alert('Error al preparar la tutoría: ' + error.message);
+              } finally {
                 setSubmitting(false);
               }
             }}
@@ -516,9 +523,21 @@ export default function CrearTutoriasTutor() {
           {modalVisible && (
             <CreateTutoriaModal
               visible={modalVisible}
-              onClose={closeModal}
-              onConfirm={() => {
+              onClose={() => {
                 setModalVisible(false);
+                route.back();
+              }}
+              onConfirm={async () => {
+                try {
+                  if (!tutoriasDataLocal) {
+                    throw new Error("No hay datos de tutoría para enviar");
+                  }
+                  console.log('Enviando datos al servidor:', tutoriasDataLocal);
+                  const response = await scheduleService.postSchedule(tutoriasDataLocal);
+                  console.log('Respuesta del servidor:', response);
+                } catch (error) {
+                  console.error('Error en la creación:', error.response?.data || error.message);
+                }
               }}
             />
           )}

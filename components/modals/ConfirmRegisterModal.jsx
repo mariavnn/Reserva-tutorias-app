@@ -1,81 +1,150 @@
-import { View, Text, Modal, ScrollView, ActivityIndicator } from 'react-native'
+import { View, Text, Modal } from 'react-native'
 import React, { useState } from 'react'
-import useRegisterStore from '../../store/useRegisterStore';
+import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import useCreateTutoriaStore from '../../store/useCreateTutoriaStore';
 import GeneralButton from '../GeneralButton';
-import { authService, registerService } from '../../service/authService';
 
-export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
-    const { personalData, academicData } = useRegisterStore();
-    const [loading, setLoading] = useState(false);
-    
-    const subjectIds = academicData.subjects.map(s => s.idMateria);
+export default function CreateTutoriaModal({ visible, onClose, onConfirm }) {
+  const { tutoriaData } = useCreateTutoriaStore();
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const prepareData = () => {
-        const  body = {
-        roleID: parseInt(personalData.typeUser.value),
-        name: personalData.name.trim(),
-        lastName: personalData.lastName.trim(),
-        user: personalData.userName.trim(),
-        email: personalData.email.trim(),
-        password: personalData.password,
-        semester: academicData.academicLevel ? parseInt(academicData.academicLevel.value) : 1,
-        subjects: subjectIds
-        };
-        return body;
+  const handleConfirm = async () => {
+    try {
+      setIsLoading(true);
+      await onConfirm(); // Llama a la función de confirmación del padre
+      setIsConfirmed(true);
+    } catch (error) {
+      console.error('Error al confirmar:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const handleRegister = async () => {
-        try{
-            setLoading(true);
-            const body = prepareData();
-            console.log('body', body);
-            const response = await authService.registerUser(body);
-            console.log('REQUEST ', response);
-            onConfirm();
-        }catch(error){
-            console.log('Error ', error);
-            console.log(error);
-        }finally{
-            setLoading(false);
-        }
-    }
+  const handleClose = () => {
+    setIsConfirmed(false); // Resetear estado al cerrar
+    onClose();
+  };
 
-    return (
-        <Modal visible={visible} animationType="slide" transparent>
-        <View className="flex-1 bg-black/40 justify-center items-center">
-            <View className="w-11/12 bg-white rounded-xl p-4 max-h-[80%]">
-                <ScrollView>
-                    <Text className="text-xl font-bold mb-2">Resumen del Registro</Text>
-                    <Text><Text className="font-semibold">Tipo de usuario:</Text> {personalData.typeUser.label}</Text>
-                    <Text><Text className="font-semibold">Nombre:</Text> {personalData.name} {personalData.lastName}</Text>
-                    <Text><Text className="font-semibold">Email:</Text> {personalData.email}</Text>
-                    <Text><Text className="font-semibold">Usuario:</Text> {personalData.userName}</Text>
-                    <Text><Text className="font-semibold">Carrera:</Text> {academicData.career?.label || ''}</Text>
-                    {academicData.academicLevel && (
-                        <Text>
-                            <Text className="font-semibold">Semestre:</Text> {academicData.academicLevel.label}
-                        </Text>
-                    )}
-                    <Text className="font-semibold mt-2">Materias seleccionadas:</Text>
-                    {academicData.subjects?.map((m, i) => (
-                        <Text key={i}>• {m.nombreMateria}</Text>
-                    ))}
-                </ScrollView>
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View className="flex-1 bg-black/40 justify-center items-center">
+        <View className="w-11/12 bg-white rounded-xl p-4 max-h-[80%]">
+          {!isConfirmed ? (
+            // Vista de Confirmación
+            <View className="space-y-4">
+              <View className="justify-center items-center my-2">
+                <MaterialIcons name="help-outline" size={60} color={"#3b82f6"} />
+                <Text className="text-xl font-bold text-blue-600 mt-3">¿Confirmar Tutoría?</Text>
+                <Text className="text-gray-600 text-center mt-1">Revisa los detalles antes de confirmar</Text>
+              </View>
 
-                {loading && (
-                    <ActivityIndicator size="large" color="#000" className="mt-4" />
-                )}
-
-                <View className="mt-4 flex flex-row  justify-between w-full">
-                    <View className='w-2/5 pl-4'>
-                        <GeneralButton title="Cancelar" type='secondary' onPress={onClose}/>
-                    </View>
-                    <View className='pr-4'>
-                        <GeneralButton title="Confirmar" type='primary' onPress={handleRegister}/>
-                    </View>
+              <View className="border border-gray-300 rounded-md p-4">
+                <View className="w-full p-3 bg-blue-100 rounded-md mb-3">
+                  <Text className="text-blue-700 text-center font-medium">
+                    {tutoriaData?.materia || 'Materia no especificada'}
+                  </Text>
                 </View>
+
+                <View className="space-y-2">
+                  <Text className="text-gray-700">
+                    <Text className="font-semibold">Fecha:</Text> {tutoriaData?.fecha || 'No especificada'}
+                  </Text>
+                  {tutoriaData?.modalidad === 'VIRTUAL' ? (
+                    <>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Hora inicio:</Text> {tutoriaData?.horaInicio || '--:--'}
+                      </Text>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Hora fin:</Text> {tutoriaData?.horaFin || '--:--'}
+                      </Text>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Modalidad:</Text> Virtual
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Horario:</Text> {tutoriaData?.disponibilidad || '--:--'}
+                      </Text>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Salón:</Text> {tutoriaData?.salon || 'No especificado'}
+                      </Text>
+                      <Text className="text-gray-700">
+                        <Text className="font-semibold">Bloque:</Text> {tutoriaData?.bloque || 'No especificado'}
+                      </Text>
+                    </>
+                  )}
+                  <Text className="text-gray-700">
+                    <Text className="font-semibold">Descripción:</Text> {tutoriaData?.descripcion || 'No especificada'}
+                  </Text>
+                </View>
+              </View>
+
+              <View className="flex-row justify-between space-x-3">
+                <View className="flex-1">
+                  <GeneralButton
+                    title="Cancelar"
+                    type="secondary"
+                    onPress={handleClose}
+                    disabled={isLoading}
+                  />
+                </View>
+                <View className="flex-1">
+                  <GeneralButton
+                    title={isLoading ? "Enviando..." : "Confirmar"}
+                    type="primary"
+                    onPress={handleConfirm}
+                    disabled={isLoading}
+                  />
+                </View>
+              </View>
             </View>
+          ) : (
+            // Vista de Éxito
+            <View className="space-y-4">
+              <View className="justify-center items-center my-2">
+                <Feather name="check-circle" size={60} color={"green"} />
+                <Text className="text-xl font-bold text-green-700 mt-3">¡Tutoría Creada con Éxito!</Text>
+                <Text className="text-gray-600 text-center mt-1">Tu tutoría ha sido registrada correctamente</Text>
+              </View>
+
+              <View className="border border-gray-300 rounded-md p-4">
+                <View className="w-full p-3 bg-green-100 rounded-md mb-3">
+                  <Text className="text-green-700 text-center font-medium">
+                    {tutoriaData?.materia || 'Materia no especificada'}
+                  </Text>
+                </View>
+
+                <View className="space-y-2 mb-3">
+                  <Text className="text-gray-700">
+                    <Text className="font-semibold">Fecha:</Text> {tutoriaData?.fecha || 'No especificada'}
+                  </Text>
+                  {tutoriaData?.modalidad === 'VIRTUAL' ? (
+                    <Text className="text-gray-700">
+                      <Text className="font-semibold">Horario:</Text> {tutoriaData?.horaInicio || '--:--'} - {tutoriaData?.horaFin || '--:--'}
+                    </Text>
+                  ) : (
+                    <Text className="text-gray-700">
+                      <Text className="font-semibold">Horario:</Text> {tutoriaData?.disponibilidad || '--:--'}
+                    </Text>
+                  )}
+                  <Text className="text-gray-700">
+                    <Text className="font-semibold">Modalidad:</Text> {tutoriaData?.modalidad === 'VIRTUAL' ? 'Virtual' : 'Presencial'}
+                  </Text>
+                </View>
+
+                <GeneralButton
+                  title="Ver Mis Tutorías"
+                  type="primary"
+                  onPress={handleClose}
+                />
+              </View>
+            </View>
+          )}
         </View>
-        </Modal>
-    )
+      </View>
+    </Modal>
+  )
 }
