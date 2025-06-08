@@ -6,16 +6,18 @@ import TutoriasCard from '../../../../components/tutoriasCard'
 import { Screen } from '../../../../components/Screen'
 import { scheduleService } from '../../../../service/scheduleService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import ConfirmModal from '../../../../components/modals/ConfirmModal'
 import SuccessModal from '../../../../components/modals/SuccessModal'
 import ConfirmModal2 from '../../../../components/modals/ConfirmModal2'
+import EditTutoriaModal from '../../../../components/modals/EditTutorias'
 
 export default function HomeTutor() {
   const [tutorias, setTutorias] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
   const loadData = useCallback(async () => {
@@ -64,6 +66,23 @@ export default function HomeTutor() {
     }
   };
 
+  const handleEdit = (tutoria) => {
+    setSelectedTutoriaId(tutoria.id);
+    setEditVisible(true);
+  };
+
+  const handleEditSuccess = (message) => {
+    setSuccessMessage(message);
+    setSuccessVisible(true);
+    setEditVisible(false);
+    loadData();
+  };
+
+ const handleCloseEdit = () => {
+    setEditVisible(false);
+    setSelectedTutoriaId(null);
+  };
+
   return (
     <Screen>
       <View className="w-full">
@@ -94,12 +113,13 @@ export default function HomeTutor() {
                   setSelectedId(tutoria.id);
                   setConfirmVisible(true);
                 }}
-                onEdit={() => console.log('Editar', tutoria.id)}
+                onEdit={() => handleEdit(tutoria)}
               />
             ))
           )}
         </ScrollView>
 
+        {/* Delete Confirmation Modal */}
         <ConfirmModal2
           visible={confirmVisible}
           onClose={() => setConfirmVisible(false)}
@@ -107,10 +127,19 @@ export default function HomeTutor() {
           message="¿Estás seguro que deseas eliminar esta tutoría?"
         />
 
+        {/* Success Modal */}
         <SuccessModal 
           visible={successVisible}
           onClose={() => setSuccessVisible(false)}
           message={successMessage}
+        />
+
+        {/* Edit Modal */}
+        <EditTutoriaModal
+          visible={editVisible}
+          onClose={handleCloseEdit}
+          tutoriaId={selectedTutoriaId}
+          onSuccess={handleEditSuccess}
         />
       </View>
     </Screen>
