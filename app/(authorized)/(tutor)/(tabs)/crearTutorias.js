@@ -19,7 +19,6 @@ import { generalInfoService } from '../../../../service/generalInfoService'
 import { scheduleService } from '../../../../service/scheduleService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// Constantes (se mantienen igual)
 const MODALITIES = {
   PRESENCIAL: 'PRESENCIAL',
   VIRTUAL: 'VIRTUAL'
@@ -134,7 +133,7 @@ const useFormLogic = (subjects) => {
     modalidad: '',
     descripcion: '',
     fecha: '',
-    ...(isVirtual 
+    ...(isVirtual
       ? { horaInicio: '', horaFin: '' }
       : { bloque: '', salon: '', disponibilidad: '' }
     )
@@ -149,7 +148,7 @@ const useFormLogic = (subjects) => {
   const handleModalityChange = (item, setFieldValue, values) => {
     const newModality = item.value;
     const isNewVirtual = newModality === MODALITIES.VIRTUAL;
-    
+
     // Mantener valores comunes
     const commonValues = {
       materia: values.materia,
@@ -175,13 +174,13 @@ const useFormLogic = (subjects) => {
 
   const handleBlockChange = (item, setFieldValue) => {
     const blockData = item.data;
-    
+
     setFieldValue('bloque', item.label);
     setFieldValue('salon', '');
     setFieldValue('disponibilidad', '');
 
     const classrooms = blockData.classrooms
-      .filter(classroom => 
+      .filter(classroom =>
         classroom.availabilities.length > 0 &&
         classroom.description.toUpperCase() !== "VIRTUAL"
       )
@@ -240,7 +239,7 @@ const useFormLogic = (subjects) => {
     }
 
     const timeSlots = classroom.data.availabilities
-      .filter(availability => 
+      .filter(availability =>
         !availability.occupied && availability.dayOfWeek === dayOfWeek
       )
       .map(availability => ({
@@ -255,7 +254,7 @@ const useFormLogic = (subjects) => {
 
   const buildTutoriaData = (values) => {
     const subjectId = subjects.find(s => s.label === values.materia)?.value;
-    
+
     const baseData = {
       subjectId,
       description: values.descripcion,
@@ -273,9 +272,9 @@ const useFormLogic = (subjects) => {
     } else {
       const selectedTimeSlot = formState.availableTimeSlots
         .find(slot => slot.label === values.disponibilidad)?.data;
-      
+
       const [startHours, startMinutes] = selectedTimeSlot?.startTime?.split(':') || ['00', '00'];
-      
+
       return {
         ...baseData,
         availabilityId: selectedTimeSlot?.availabilityId,
@@ -313,26 +312,26 @@ export default function CrearTutoriasTutor() {
   const handleSubmit = (values) => {
     // Guardar los valores del formulario para mostrarlos en el modal
     setFormValues(values);
-    
+
     // Preparar los datos para el modal
     const modalData = {
       materia: values.materia,
       descripcion: values.descripcion,
       fecha: values.fecha,
       modalidad: values.modalidad,
-      ...(values.modalidad === MODALITIES.VIRTUAL 
-        ? { 
-            horaInicio: values.horaInicio, 
-            horaFin: values.horaFin 
-          }
-        : { 
-            bloque: values.bloque, 
-            salon: values.salon, 
-            disponibilidad: values.disponibilidad 
-          }
+      ...(values.modalidad === MODALITIES.VIRTUAL
+        ? {
+          horaInicio: values.horaInicio,
+          horaFin: values.horaFin
+        }
+        : {
+          bloque: values.bloque,
+          salon: values.salon,
+          disponibilidad: values.disponibilidad
+        }
       )
     };
-    
+
     setTutoriaData(modalData);
     setModalVisible(true);
   };
@@ -342,14 +341,14 @@ export default function CrearTutoriasTutor() {
       setConfirmLoading(true);
       const tutoriaData = formLogic.buildTutoriaData(formValues);
       const userId = await AsyncStorage.getItem('UserId');
-      
+
       const completeData = { ...tutoriaData, userId };
-      
+
       console.log('Datos a enviar:', JSON.stringify(completeData, null, 2));
-      
+
       const response = await scheduleService.postSchedule(completeData);
       console.log('Tutoría creada:', response);
-      
+
       // No cerramos el modal aquí, dejamos que muestre el estado de éxito
     } catch (error) {
       console.error('Error al crear tutoría:', error);
@@ -382,7 +381,7 @@ export default function CrearTutoriasTutor() {
           </Text>
 
           <SizedBox height={24} />
-          
+
           <Formik
             initialValues={formLogic.getInitialValues()}
             validationSchema={formLogic.getValidationSchema()}
@@ -391,8 +390,8 @@ export default function CrearTutoriasTutor() {
           >
             {({ handleSubmit, setFieldValue, values, errors, touched, isSubmitting }) => (
               <View className="w-full h-[79%]">
-                <ScrollView 
-                  className="mb-4" 
+                <ScrollView
+                  className="mb-4"
                   contentContainerStyle={{ paddingBottom: 10, flexGrow: 1 }}
                   showsVerticalScrollIndicator={false}
                 >
@@ -490,9 +489,9 @@ export default function CrearTutoriasTutor() {
                         disabled={formLogic.formState.availableTimeSlots.length === 0 || !formLogic.formState.selectedDate || !formLogic.formState.selectedClassroom}
                         placeholder={
                           !formLogic.formState.selectedDate ? "Selecciona una fecha primero" :
-                          !formLogic.formState.selectedClassroom ? "Selecciona un salón primero" :
-                          formLogic.formState.availableTimeSlots.length === 0 ? "No hay horarios disponibles para esta fecha" :
-                          "Selecciona un horario"
+                            !formLogic.formState.selectedClassroom ? "Selecciona un salón primero" :
+                              formLogic.formState.availableTimeSlots.length === 0 ? "No hay horarios disponibles para esta fecha" :
+                                "Selecciona un horario"
                         }
                       />
                     </>

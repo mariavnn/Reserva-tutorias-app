@@ -8,7 +8,7 @@ import { scheduleService } from '../../../../service/scheduleService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import SuccessModal from '../../../../components/modals/SuccessModal'
 import ConfirmModal2 from '../../../../components/modals/ConfirmModal2'
-import EditTutoriaModal from '../../../../components/modals/EditTutorias'
+import EditarTutoriaTutor from '../editarTutorias'
 
 export default function HomeTutor() {
   const [tutorias, setTutorias] = useState([]);
@@ -26,18 +26,25 @@ export default function HomeTutor() {
       if (!userId) return;
 
       const response = await scheduleService.getInfo(userId);
-      const formattedTutorias = (response || []).map(tutoria => ({
-        id: tutoria.idHorario,
-        nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
-        fecha: new Date(tutoria.fechaHorario).toLocaleDateString(),
-        horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
-        descripcion: tutoria.descripcion,
-        ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
-        modo: tutoria.modo,
-        tipo: tutoria.tipo,
-        idUsuario: tutoria.usuario?.idUsuario ?? null,
-        agendados: tutoria.agendados ?? []
-      }));
+      const formattedTutorias = (response || [])
+        .map(tutoria => ({
+          id: tutoria.idHorario,
+          nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
+          fecha: new Date(tutoria.fechaHorario), // Guardamos el objeto Date para poder ordenar
+          fechaFormatted: new Date(tutoria.fechaHorario).toLocaleDateString(),
+          horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
+          descripcion: tutoria.descripcion,
+          ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
+          modo: tutoria.modo,
+          tipo: tutoria.tipo,
+          idUsuario: tutoria.usuario?.idUsuario ?? null,
+          agendados: tutoria.agendados ?? []
+        }))
+        .sort((a, b) => a.fecha - b.fecha) // Ordenamos por fecha (más cercana primero)
+        .map(tutoria => ({
+          ...tutoria,
+          fecha: tutoria.fechaFormatted // Reemplazamos el objeto Date con el string formateado
+        }));
 
       setTutorias(formattedTutorias);
     } catch (error) {
@@ -78,7 +85,7 @@ export default function HomeTutor() {
     loadData();
   };
 
- const handleCloseEdit = () => {
+  const handleCloseEdit = () => {
     setEditVisible(false);
     setSelectedTutoriaId(null);
   };
@@ -128,14 +135,14 @@ export default function HomeTutor() {
         />
 
         {/* Success Modal */}
-        <SuccessModal 
+        <SuccessModal
           visible={successVisible}
           onClose={() => setSuccessVisible(false)}
           message={successMessage}
         />
 
         {/* Edit Modal */}
-        <EditTutoriaModal
+        <EditarTutoriaTutor
           visible={editVisible}
           onClose={handleCloseEdit}
           tutoriaId={selectedTutoriaId}
