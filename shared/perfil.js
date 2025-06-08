@@ -16,37 +16,13 @@ import LoadingIndicator from "../components/LoadingIndicator";
 
 export default function PerfilInterfaz() {
     const router = useRouter();
-    const { userInfo, setUserInfo, setCareer } = useUserStore();
+    const { userInfo, setUserInfo, setCareer, fetchUserInfo, fetchCareerInfo } = useUserStore();
     const [loading, setLoading] = useState(false);
   
 
     useEffect(() => {
-      const handleInfo = async () => {
-        setLoading(true);
-        try {
-          const user = await userInfoService.getUserInfo();
-          setUserInfo(user);
-        } catch (error) {
-          console.log("Error al obtener la información del usuario: ", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const handleCareerInfo = async () => {
-        setLoading(true);
-        try {
-          const career = await userInfoService.getCareer();
-          setCareer(career);
-        }catch(error){
-          console.log("Error al obtener la información de las carreras: ", error);
-        }finally{
-          setLoading(false);
-        }
-      }
-
-      handleInfo();
-      handleCareerInfo();
+      fetchUserInfo();
+      fetchCareerInfo();
     }, []);
 
     
