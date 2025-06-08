@@ -18,8 +18,6 @@ export default function PerfilInterfaz({ data }) {
     }
     
     const userType = useUserTypeStore(state => state.userType);
-
-    
     return (
       <Screen>
         <View className="w-full flex-1 px-6">
@@ -37,7 +35,7 @@ export default function PerfilInterfaz({ data }) {
             <Text className="text-gray-600">{data.email}</Text>
   
             <TouchableOpacity 
-              className="flex-row items-center gap-2 px-4 py-2 rounded-lg mt-4"
+              className="flex-row items-center gap-2 px-4 py-2 rounded-lg mt-4 mb-4"
               onPress={() => router.push("/(authorized)/(student)/editarPerfil")}
             >
               <MaterialCommunityIcons name="account-edit-outline" size={20} color="#2673DD" />
@@ -45,11 +43,14 @@ export default function PerfilInterfaz({ data }) {
             </TouchableOpacity>
           </View>
 
-          <InfoPefil
-            userType={userType}
-
-            data={data}
-          />
+         {
+          (data?.role?.name === "Profesor" || data?.role?.name === "Estudiante") && (
+            <InfoPefil
+              userType={userType}
+              data={data}
+            />
+          )
+        }
   
           <TouchableOpacity 
             className="flex-row items-center justify-center gap-2 px-4 py-2 bg-gray-200 rounded-lg"

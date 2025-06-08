@@ -4,8 +4,8 @@ import MateriasContainer from './MateriasContainer';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
-export default function InfoPefil({userType, data}) {
-    const isTutor = userType === "Tutor";
+export default function InfoPefil({ data }) {
+    const isTutor = data.role.name === "Profesor";
 
     return (
       <View className="bg-white w-full mt-10 p-5 rounded-xl shadow-sm mb-10">
@@ -17,12 +17,15 @@ export default function InfoPefil({userType, data}) {
         </View>
   
         {isTutor ? (
-          <>
-            <View className="flex-row flex-wrap gap-2 mb-4">
-              {data.subjectUsers.map((materia) => (
-                <MateriasContainer key={materia.subjectId} label={materia.subjectName} />
-              ))}
-            </View>
+          <> 
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="w-full h-15">
+              <View className="flex-row flex-wrap gap-2 mb-4">
+                {data.subjectUsers.map((materia) => (
+                  <MateriasContainer key={materia.subjectId} label={materia.subjectName} />
+                ))}
+              </View>
+            </ScrollView>
+            
   
             <View className="flex-row justify-around mt-2">
               <View className="justify-center items-center w-1/3">
