@@ -1,12 +1,11 @@
-import { View, Text, KeyboardAvoidingView, ScrollView } from 'react-native'
-import React, { useRef, useState, useEffect } from 'react'
+import { View, Text, KeyboardAvoidingView, ScrollView, Platform } from 'react-native'
+import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import SizedBox from '../../../../components/SizedBox'
 import InputField from '../../../../components/InputField'
 import InputDate from '../../../../components/InputDate'
 import InputHour from '../../../../components/InputHour'
-import { Platform } from 'react-native'
 import GeneralButton from '../../../../components/GeneralButton'
 import DropdownInput from '../../../../components/DropdownInput'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -18,30 +17,46 @@ import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModa
 import { useRouter } from 'expo-router'
 import { generalInfoService } from '../../../../service/generalInfoService'
 import { scheduleService } from '../../../../service/scheduleService'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// Esquemas de validación separados
-const crearTutoriaPresencialSchema = yup.object().shape({
+// Constantes (se mantienen igual)
+const MODALITIES = {
+  PRESENCIAL: 'PRESENCIAL',
+  VIRTUAL: 'VIRTUAL'
+};
+
+const DAYS_MAP = {
+  0: 'DOMINGO', 1: 'LUNES', 2: 'MARTES', 3: 'MIERCOLES',
+  4: 'JUEVES', 5: 'VIERNES', 6: 'SABADO'
+};
+
+const MODALITY_OPTIONS = [
+  { label: 'Presencial', value: MODALITIES.PRESENCIAL },
+  { label: 'Virtual', value: MODALITIES.VIRTUAL },
+];
+
+// Esquemas de validación (se mantienen igual)
+const baseSchema = {
   materia: yup.string().required("El campo materia es requerido"),
   modalidad: yup.string().required("La modalidad es requerida"),
   descripcion: yup.string().required("La descripción es requerida"),
   fecha: yup.string().required("La fecha es requerida"),
+};
+
+const presencialSchema = yup.object().shape({
+  ...baseSchema,
   bloque: yup.string().required("El bloque es requerido"),
   salon: yup.string().required("El salón es requerido"),
   disponibilidad: yup.string().required("La disponibilidad es requerida"),
 });
 
-const crearTutoriaVirtualSchema = yup.object().shape({
-  materia: yup.string().required("El campo materia es requerido"),
-  modalidad: yup.string().required("La modalidad es requerida"),
-  descripcion: yup.string().required("La descripción es requerida"),
-  fecha: yup.string().required("La fecha es requerida"),
+const virtualSchema = yup.object().shape({
+  ...baseSchema,
   horaInicio: yup.string().required("La hora de inicio es requerida"),
   horaFin: yup
     .string()
     .required("La hora de fin es requerida")
-    .test(
-      'is-greater',
-      'La hora de fin debe ser posterior a la de inicio',
+    .test('is-greater', 'La hora de fin debe ser posterior a la de inicio',
       function (value) {
         const { horaInicio } = this.parent;
         return !horaInicio || !value || horaInicio < value;
@@ -49,151 +64,124 @@ const crearTutoriaVirtualSchema = yup.object().shape({
     ),
 });
 
-// Función para obtener el día de la semana en español desde una fecha
+// Utilidades (se mantienen igual)
 const getDayOfWeekFromDate = (dateString) => {
   if (!dateString) return null;
-
   const date = new Date(dateString + 'T00:00:00');
-  const dayIndex = date.getDay(); // 0 = domingo, 1 = lunes, etc.
-
-  const dayMap = {
-    0: 'DOMINGO',
-    1: 'LUNES',
-    2: 'MARTES',
-    3: 'MIERCOLES',
-    4: 'JUEVES',
-    5: 'VIERNES',
-    6: 'SABADO'
-  };
-
-  return dayMap[dayIndex];
+  return DAYS_MAP[date.getDay()];
 };
 
-export default function CrearTutoriasTutor() {
-  const { setTutoriaData } = useCreateTutoriaStore();
-  const [tutoriasDataLocal, setTutoriasDataLocal] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedModality, setSelectedModality] = useState(null);
-  const [selectedBlock, setSelectedBlock] = useState(null);
-  const [selectedClassroom, setSelectedClassroom] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [availableBlocks, setAvailableBlocks] = useState([]);
-  const [availableSubjects, setAvailableSubjects] = useState([]);
-  const [availableClassrooms, setAvailableClassrooms] = useState([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+const formatDate = (dateString, timeString = '00:00') => {
+  const [day, month, year] = dateString.split('-');
+  const [hours, minutes] = timeString.split(':');
+  const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  return `${formattedDate}T${hours}:${minutes}:00`;
+};
+
+// Hook personalizado para manejar datos (se mantiene igual)
+const useFormData = () => {
+  const [subjects, setSubjects] = useState([]);
+  const [blocks, setBlocks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isVirtual = selectedModality === 'VIRTUAL';
-
-  const tiposModalidad = [
-    { label: 'Presencial', value: 'PRESENCIAL' },
-    { label: 'Virtual', value: 'VIRTUAL' },
-  ];
-
-  const route = useRouter();
-
-  const getInitialValues = () => {
-    if (isVirtual) {
-      return {
-        materia: '',
-        modalidad: '',
-        descripcion: '',
-        fecha: '',
-        horaInicio: '',
-        horaFin: '',
-      };
-    } else {
-      return {
-        materia: '',
-        modalidad: '',
-        descripcion: '',
-        fecha: '',
-        bloque: '',
-        salon: '',
-        disponibilidad: '',
-      };
-    }
-  };
-
-  const getValidationSchema = () => {
-    return isVirtual ? crearTutoriaVirtualSchema : crearTutoriaPresencialSchema;
-  };
-
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       try {
         setIsLoading(true);
-        const subjects = await generalInfoService.getInfo('materias');
+        const [subjectsData, blocksData] = await Promise.all([
+          generalInfoService.getInfo('materias'),
+          generalInfoService.getInfo('bloques')
+        ]);
 
-        const formattedSubjects = subjects.map(subject => ({
+        setSubjects(subjectsData.map(subject => ({
           label: subject.subjectName,
           value: subject.subjectId
-        }));
+        })));
 
-        setAvailableSubjects(formattedSubjects);
-
-        // Solo cargar bloques si es presencial
-        if (!isVirtual && selectedModality === 'PRESENCIAL') {
-          const blocks = await generalInfoService.getInfo('bloques');
-          const formattedBlocks = blocks.map(block => ({
-            label: `${block.blockName} (${block.section})`,
-            value: block.blockId.toString(),
-            data: block
-          }));
-          setAvailableBlocks(formattedBlocks);
-        }
+        setBlocks(blocksData.map(block => ({
+          label: `${block.blockName} (${block.section})`,
+          value: block.blockId.toString(),
+          data: block
+        })));
       } catch (error) {
-        console.error('Error al cargar datos:', error);
+        console.error('Error loading initial data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
-  }, [selectedModality, isVirtual]);
+    loadInitialData();
+  }, []);
 
-  const handleModalityChange = (selectedModalityItem, setFieldValue, values) => {
-    const currentMateria = values.materia;
-    const currentDescripcion = values.descripcion;
-    const currentFecha = values.fecha;
+  return { subjects, blocks, isLoading };
+};
 
-    setSelectedModality(selectedModalityItem.value);
-    setFieldValue('modalidad', selectedModalityItem.value);
+// Hook para manejar lógica de formulario (se mantiene igual)
+const useFormLogic = (subjects) => {
+  const [formState, setFormState] = useState({
+    modalidad: null,
+    selectedBlock: null,
+    selectedClassroom: null,
+    selectedDate: null,
+    availableClassrooms: [],
+    availableTimeSlots: []
+  });
 
-    // Mantener valores comunes
-    setFieldValue('materia', currentMateria);
-    setFieldValue('descripcion', currentDescripcion);
-    setFieldValue('fecha', currentFecha);
+  const isVirtual = formState.modalidad === MODALITIES.VIRTUAL;
 
-    // Resetear campos específicos
-    if (selectedModalityItem.value === 'VIRTUAL') {
-      setFieldValue('bloque', '');
-      setFieldValue('salon', '');
-      setFieldValue('disponibilidad', '');
-    } else {
-      setFieldValue('horaInicio', '');
-      setFieldValue('horaFin', '');
-    }
+  const getInitialValues = () => ({
+    materia: '',
+    modalidad: '',
+    descripcion: '',
+    fecha: '',
+    ...(isVirtual 
+      ? { horaInicio: '', horaFin: '' }
+      : { bloque: '', salon: '', disponibilidad: '' }
+    )
+  });
 
-    // Reset states
-    setSelectedBlock(null);
-    setSelectedClassroom(null);
-    setAvailableTimeSlots([]);
-    setAvailableClassrooms([]);
+  const getValidationSchema = () => isVirtual ? virtualSchema : presencialSchema;
+
+  const updateFormState = (updates) => {
+    setFormState(prev => ({ ...prev, ...updates }));
   };
-  const handleBlockChange = (selectedBlock, setFieldValue) => {
-    setSelectedBlock(selectedBlock.data);
-    setFieldValue('bloque', selectedBlock.label);
 
-    // Resetear campos dependientes
+  const handleModalityChange = (item, setFieldValue, values) => {
+    const newModality = item.value;
+    const isNewVirtual = newModality === MODALITIES.VIRTUAL;
+    
+    // Mantener valores comunes
+    const commonValues = {
+      materia: values.materia,
+      descripcion: values.descripcion,
+      fecha: values.fecha,
+      modalidad: newModality
+    };
+
+    // Establecer todos los valores
+    Object.keys(getInitialValues()).forEach(key => {
+      setFieldValue(key, commonValues[key] || '');
+    });
+
+    // Resetear estado
+    updateFormState({
+      modalidad: newModality,
+      selectedBlock: null,
+      selectedClassroom: null,
+      availableClassrooms: [],
+      availableTimeSlots: []
+    });
+  };
+
+  const handleBlockChange = (item, setFieldValue) => {
+    const blockData = item.data;
+    
+    setFieldValue('bloque', item.label);
     setFieldValue('salon', '');
     setFieldValue('disponibilidad', '');
-    setSelectedClassroom(null);
-    setAvailableTimeSlots([]);
 
-    // Obtener salones del bloque seleccionado (excluyendo virtuales)
-    const classrooms = selectedBlock.data.classrooms
-      .filter(classroom =>
+    const classrooms = blockData.classrooms
+      .filter(classroom => 
         classroom.availabilities.length > 0 &&
         classroom.description.toUpperCase() !== "VIRTUAL"
       )
@@ -203,115 +191,177 @@ export default function CrearTutoriasTutor() {
         data: classroom
       }));
 
-    setAvailableClassrooms(classrooms);
+    updateFormState({
+      selectedBlock: blockData,
+      selectedClassroom: null,
+      availableClassrooms: classrooms,
+      availableTimeSlots: []
+    });
   };
 
-  const handleClassroomChange = (selectedClassroom, setFieldValue) => {
-    setSelectedClassroom(selectedClassroom);
-    setFieldValue('salon', selectedClassroom.label);
-
-    // Resetear campos dependientes
+  const handleClassroomChange = (item, setFieldValue) => {
+    setFieldValue('salon', item.label);
     setFieldValue('disponibilidad', '');
-    setAvailableTimeSlots([]);
 
-    // Actualizar horarios si ya hay una fecha seleccionada
-    if (selectedDate) {
-      updateAvailableTimeSlots(selectedClassroom, selectedDate);
+    updateFormState({
+      selectedClassroom: item,
+      availableTimeSlots: []
+    });
+
+    if (formState.selectedDate) {
+      updateAvailableTimeSlots(item, formState.selectedDate);
     }
   };
 
   const handleDateChange = (date, setFieldValue) => {
-    setSelectedDate(date);
     setFieldValue('fecha', date);
-
-    // Resetear disponibilidad
     setFieldValue('disponibilidad', '');
-    setAvailableTimeSlots([]);
 
-    // Actualizar horarios si ya hay un salón seleccionado (para presencial)
-    if (!isVirtual && selectedClassroom) {
-      updateAvailableTimeSlots(selectedClassroom, date);
+    updateFormState({
+      selectedDate: date,
+      availableTimeSlots: []
+    });
+
+    if (!isVirtual && formState.selectedClassroom) {
+      updateAvailableTimeSlots(formState.selectedClassroom, date);
     }
   };
 
   const updateAvailableTimeSlots = (classroom, date) => {
     if (!classroom?.data?.availabilities || !date) {
-      setAvailableTimeSlots([]);
+      updateFormState({ availableTimeSlots: [] });
       return;
     }
 
-    // Obtener el día de la semana de la fecha seleccionada
     const dayOfWeek = getDayOfWeekFromDate(date);
-
     if (!dayOfWeek) {
-      setAvailableTimeSlots([]);
+      updateFormState({ availableTimeSlots: [] });
       return;
     }
 
-    // Filtrar horarios disponibles para el día calculado
-    const filteredTimeSlots = classroom.data.availabilities
-      .filter(availability => {
-        return !availability.occupied &&
-          availability.dayOfWeek === dayOfWeek;
-      })
+    const timeSlots = classroom.data.availabilities
+      .filter(availability => 
+        !availability.occupied && availability.dayOfWeek === dayOfWeek
+      )
       .map(availability => ({
         label: `${availability.startTime.slice(0, 5)} - ${availability.endTime.slice(0, 5)}`,
         value: availability.availabilityId.toString(),
         data: availability
       }))
-      .sort((a, b) => {
-        return a.data.startTime.localeCompare(b.data.startTime);
-      });
+      .sort((a, b) => a.data.startTime.localeCompare(b.data.startTime));
 
-    setAvailableTimeSlots(filteredTimeSlots);
+    updateFormState({ availableTimeSlots: timeSlots });
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    route.back();
-  }
-
   const buildTutoriaData = (values) => {
-    // Función para formatear fecha correctamente
-    const formatDate = (dateString, timeString = '00:00') => {
-      const [day, month, year] = dateString.split('-');
-      const [hours, minutes] = timeString.split(':');
-
-      // Asegurar formato YYYY-MM-DD con ceros a la izquierda
-      const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      return `${formattedDate}T${hours}:${minutes}:00`;
+    const subjectId = subjects.find(s => s.label === values.materia)?.value;
+    
+    const baseData = {
+      subjectId,
+      description: values.descripcion,
+      type: values.modalidad,
+      scheduleDate: formatDate(values.fecha),
     };
 
     if (isVirtual) {
-      const tutoriaVirtualData = {
-        subjectId: availableSubjects.find(s => s.label === values.materia)?.value,
-        description: values.descripcion,
-        type: values.modalidad,
-        scheduleDate: formatDate(values.fecha),
+      return {
+        ...baseData,
         startTime: values.horaInicio + ':00',
         endTime: values.horaFin + ':00',
+        scheduleDate: formatDate(values.fecha, '00:00')
       };
-
-      console.log('Datos de tutoría virtual a enviar:', JSON.stringify(tutoriaVirtualData, null, 2));
-      return tutoriaVirtualData;
     } else {
-      const selectedTimeSlot = availableTimeSlots.find(slot =>
-        slot.label === values.disponibilidad
-      )?.data;
-
+      const selectedTimeSlot = formState.availableTimeSlots
+        .find(slot => slot.label === values.disponibilidad)?.data;
+      
       const [startHours, startMinutes] = selectedTimeSlot?.startTime?.split(':') || ['00', '00'];
-
-      const tutoriaPresencialData = {
+      
+      return {
+        ...baseData,
         availabilityId: selectedTimeSlot?.availabilityId,
-        subjectId: availableSubjects.find(s => s.label === values.materia)?.value,
-        description: values.descripcion,
-        type: values.modalidad,
-        scheduleDate: formatDate(values.fecha, `${startHours}:${startMinutes}`),
+        scheduleDate: formatDate(values.fecha, `${startHours}:${startMinutes}`)
       };
-
-      console.log('Datos de tutoría presencial a enviar:', JSON.stringify(tutoriaPresencialData, null, 2));
-      return tutoriaPresencialData;
     }
+  };
+
+  return {
+    formState,
+    isVirtual,
+    getInitialValues,
+    getValidationSchema,
+    handleModalityChange,
+    handleBlockChange,
+    handleClassroomChange,
+    handleDateChange,
+    buildTutoriaData
+  };
+};
+
+export default function CrearTutoriasTutor() {
+  const { subjects, blocks, isLoading } = useFormData();
+  const formLogic = useFormLogic(subjects);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [formValues, setFormValues] = useState(null);
+  const router = useRouter();
+  const { setTutoriaData } = useCreateTutoriaStore();
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleSubmit = (values) => {
+    // Guardar los valores del formulario para mostrarlos en el modal
+    setFormValues(values);
+    
+    // Preparar los datos para el modal
+    const modalData = {
+      materia: values.materia,
+      descripcion: values.descripcion,
+      fecha: values.fecha,
+      modalidad: values.modalidad,
+      ...(values.modalidad === MODALITIES.VIRTUAL 
+        ? { 
+            horaInicio: values.horaInicio, 
+            horaFin: values.horaFin 
+          }
+        : { 
+            bloque: values.bloque, 
+            salon: values.salon, 
+            disponibilidad: values.disponibilidad 
+          }
+      )
+    };
+    
+    setTutoriaData(modalData);
+    setModalVisible(true);
+  };
+
+  const handleConfirm = async () => {
+    try {
+      setConfirmLoading(true);
+      const tutoriaData = formLogic.buildTutoriaData(formValues);
+      const userId = await AsyncStorage.getItem('UserId');
+      
+      const completeData = { ...tutoriaData, userId };
+      
+      console.log('Datos a enviar:', JSON.stringify(completeData, null, 2));
+      
+      const response = await scheduleService.postSchedule(completeData);
+      console.log('Tutoría creada:', response);
+      
+      // No cerramos el modal aquí, dejamos que muestre el estado de éxito
+    } catch (error) {
+      console.error('Error al crear tutoría:', error);
+      setModalVisible(false);
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setModalVisible(false);
+    router.back();
   };
 
   return (
@@ -322,9 +372,9 @@ export default function CrearTutoriasTutor() {
       <Screen>
         <View className="w-full">
           <GeneralTitle
-            label={"Registrar Nueva Tutoria"}
-            type='primary'
-            className='!text-blue-500 mt-4 !text-2xl'
+            label="Registrar Nueva Tutoria"
+            type="primary"
+            className="!text-blue-500 mt-4 !text-2xl"
           />
           <SizedBox height={8} />
           <Text className="text-gray-500 text-md">
@@ -332,74 +382,50 @@ export default function CrearTutoriasTutor() {
           </Text>
 
           <SizedBox height={24} />
+          
           <Formik
-            initialValues={getInitialValues()}
-            validationSchema={getValidationSchema()}
+            initialValues={formLogic.getInitialValues()}
+            validationSchema={formLogic.getValidationSchema()}
             enableReinitialize={true}
-            // onSubmit={values => {
-            //   console.log('Valores del formulario:', values);
-            //   const tutoriaData = buildTutoriaData(values);
-            //   setTutoriaData(tutoriaData);
-            //   setModalVisible(true);
-            // }}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                console.log('Valores del formulario:', values);
-
-                // 1. Construir los datos correctamente formateados
-                const tutoriaData = buildTutoriaData(values);
-                console.log('Datos formateados:', tutoriaData);
-
-                // 2. Agregar el userId (asegúrate de que esté disponible)
-                const completeData = {
-                  ...tutoriaData,
-                  userId: await AsyncStorage.getItem('UserId') // O tu método para obtener el ID
-                };
-                console.log('Datos completos con userId:', completeData);
-
-                // 3. Guardar en el estado local para el modal
-                setTutoriasDataLocal(completeData);
-
-                // 4. Mostrar modal de confirmación
-                setModalVisible(true);
-              } catch (error) {
-                console.error('Error al preparar datos:', error);
-                alert('Error al preparar la tutoría: ' + error.message);
-              } finally {
-                setSubmitting(false);
-              }
-            }}
+            onSubmit={handleSubmit}
           >
-            {({ handleSubmit, setFieldValue, values, errors, touched }) => (
+            {({ handleSubmit, setFieldValue, values, errors, touched, isSubmitting }) => (
               <View className="w-full h-[79%]">
-                <ScrollView className="mb-4" contentContainerStyle={{ paddingBottom: 10, flexGrow: 1 }}>
-                  {/* Selección de Modalidad */}
+                <ScrollView 
+                  className="mb-4" 
+                  contentContainerStyle={{ paddingBottom: 10, flexGrow: 1 }}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {/* Resto del formulario (se mantiene igual) */}
+                  {/* Modalidad */}
                   <DropdownInput
-                    label={"Modalidad"}
+                    label="Modalidad"
                     labelIcon={<FontAwesome5 name="laptop" size={16} color="black" />}
-                    items={tiposModalidad}
-                    selectedValue={tiposModalidad.find(m => m.value === values.modalidad)?.label}
-                    onValueChange={(item) => handleModalityChange(item, setFieldValue, values)}
+                    items={MODALITY_OPTIONS}
+                    selectedValue={values.modalidad}
+                    onValueChange={(item) => formLogic.handleModalityChange(item, setFieldValue, values)}
                     error={errors.modalidad}
                     touched={touched.modalidad}
                   />
                   <SizedBox height={10} />
 
-                  {/* Selección de Materia */}
+                  {/* Materia */}
                   <DropdownInput
-                    label={"Materia"}
+                    label="Materia"
                     labelIcon={<FontAwesome5 name="book" size={16} color="black" />}
-                    items={availableSubjects}
+                    items={subjects}
                     selectedValue={values.materia}
                     onValueChange={(item) => setFieldValue('materia', item.label)}
                     error={errors.materia}
                     touched={touched.materia}
+                    disabled={isLoading}
+                    placeholder={isLoading ? "Cargando materias..." : "Selecciona una materia"}
                   />
                   <SizedBox height={10} />
 
-                  {/* Descripción de la tutoría */}
+                  {/* Descripción */}
                   <InputField
-                    label={"Descripción de la tutoría"}
+                    label="Descripción de la tutoría"
                     placeholder="Describe brevemente el tema o contenido de la tutoría"
                     value={values.descripcion}
                     onChangeText={(text) => setFieldValue('descripcion', text)}
@@ -411,29 +437,28 @@ export default function CrearTutoriasTutor() {
                   />
                   <SizedBox height={10} />
 
-                  {/* Selección de Fecha */}
+                  {/* Fecha */}
                   <InputDate
-                    label={"Fecha de la tutoría"}
+                    label="Fecha de la tutoría"
                     placeholder="DD-MM-AAAA (ej: 11-06-2025)"
-                    type='date'
+                    type="date"
                     value={values.fecha}
-                    onChange={(date) => handleDateChange(date, setFieldValue)}
+                    onChange={(date) => formLogic.handleDateChange(date, setFieldValue)}
                     error={errors.fecha}
                     touched={touched.fecha}
                     labelIcon={<FontAwesome5 name="calendar-alt" size={16} color="black" />}
                   />
                   <SizedBox height={10} />
 
-                  {/* Campos para modalidad PRESENCIAL */}
-                  {!isVirtual && (
+                  {/* Campos Presencial */}
+                  {!formLogic.isVirtual && formLogic.formState.modalidad === MODALITIES.PRESENCIAL && (
                     <>
-                      {/* Selección de Bloque */}
                       <DropdownInput
-                        label={"Bloque"}
+                        label="Bloque"
                         labelIcon={<Entypo name="location-pin" size={18} color="black" />}
-                        items={availableBlocks}
+                        items={blocks}
                         selectedValue={values.bloque}
-                        onValueChange={(item) => handleBlockChange(item, setFieldValue)}
+                        onValueChange={(item) => formLogic.handleBlockChange(item, setFieldValue)}
                         error={errors.bloque}
                         touched={touched.bloque}
                         disabled={isLoading}
@@ -441,49 +466,43 @@ export default function CrearTutoriasTutor() {
                       />
                       <SizedBox height={10} />
 
-                      {/* Selección de Salón */}
                       <DropdownInput
-                        label={"Salón"}
+                        label="Salón"
                         labelIcon={<Entypo name="home" size={18} color="black" />}
-                        items={availableClassrooms}
+                        items={formLogic.formState.availableClassrooms}
                         selectedValue={values.salon}
-                        onValueChange={(item) => handleClassroomChange(item, setFieldValue)}
+                        onValueChange={(item) => formLogic.handleClassroomChange(item, setFieldValue)}
                         error={errors.salon}
                         touched={touched.salon}
-                        disabled={!selectedBlock || availableClassrooms.length === 0}
-                        placeholder={!selectedBlock ? "Selecciona un bloque primero" : "Selecciona un salón"}
+                        disabled={!formLogic.formState.selectedBlock || formLogic.formState.availableClassrooms.length === 0}
+                        placeholder={!formLogic.formState.selectedBlock ? "Selecciona un bloque primero" : "Selecciona un salón"}
                       />
                       <SizedBox height={10} />
 
-                      {/* Selección de Horario - Presencial */}
                       <DropdownInput
-                        label={"Horario disponible"}
+                        label="Horario disponible"
                         labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
-                        items={availableTimeSlots}
+                        items={formLogic.formState.availableTimeSlots}
                         selectedValue={values.disponibilidad}
                         onValueChange={(item) => setFieldValue('disponibilidad', item.label)}
                         error={errors.disponibilidad}
                         touched={touched.disponibilidad}
-                        disabled={availableTimeSlots.length === 0 || !selectedDate || !selectedClassroom}
+                        disabled={formLogic.formState.availableTimeSlots.length === 0 || !formLogic.formState.selectedDate || !formLogic.formState.selectedClassroom}
                         placeholder={
-                          !selectedDate
-                            ? "Selecciona una fecha primero"
-                            : !selectedClassroom
-                              ? "Selecciona un salón primero"
-                              : availableTimeSlots.length === 0
-                                ? "No hay horarios disponibles para esta fecha"
-                                : "Selecciona un horario"
+                          !formLogic.formState.selectedDate ? "Selecciona una fecha primero" :
+                          !formLogic.formState.selectedClassroom ? "Selecciona un salón primero" :
+                          formLogic.formState.availableTimeSlots.length === 0 ? "No hay horarios disponibles para esta fecha" :
+                          "Selecciona un horario"
                         }
                       />
                     </>
                   )}
 
-                  {/* Campos para modalidad VIRTUAL */}
-                  {isVirtual && (
+                  {/* Campos Virtual */}
+                  {formLogic.isVirtual && (
                     <>
-                      {/* Hora de Inicio - Virtual */}
                       <InputHour
-                        label={"Hora de inicio"}
+                        label="Hora de inicio"
                         placeholder="HH:MM (ej: 09:00)"
                         value={values.horaInicio}
                         onChange={(hora) => setFieldValue('horaInicio', hora)}
@@ -493,56 +512,39 @@ export default function CrearTutoriasTutor() {
                       />
                       <SizedBox height={10} />
 
-                      {/* Hora de Fin - Virtual */}
                       <InputHour
-                        label={"Hora de fin"}
+                        label="Hora de fin"
                         placeholder="HH:MM (ej: 11:00)"
-                        type='time'
+                        type="time"
                         value={values.horaFin}
                         onChange={(hora) => setFieldValue('horaFin', hora)}
                         error={errors.horaFin}
                         touched={touched.horaFin}
                         labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
-                        minTime={values.horaInicio} // Pasar hora inicio como mínimo
+                        minTime={values.horaInicio}
                       />
                     </>
                   )}
-
                 </ScrollView>
 
                 <View className="w-full bg-background-light justify-center">
                   <GeneralButton
-                    title={"Crear tutoría"}
+                    title="Crear tutoría"
                     onPress={handleSubmit}
+                    disabled={isSubmitting}
                   />
                 </View>
               </View>
             )}
           </Formik>
 
-          {modalVisible && (
-            <CreateTutoriaModal
-              visible={modalVisible}
-              onClose={() => {
-                setModalVisible(false);
-                route.back();
-              }}
-              onConfirm={async () => {
-                try {
-                  if (!tutoriasDataLocal) {
-                    throw new Error("No hay datos de tutoría para enviar");
-                  }
-                  console.log('Enviando datos al servidor:', tutoriasDataLocal);
-                  const response = await scheduleService.postSchedule(tutoriasDataLocal);
-                  console.log('Respuesta del servidor:', response);
-                } catch (error) {
-                  console.error('Error en la creación:', error.response?.data || error.message);
-                }
-              }}
-            />
-          )}
+          <CreateTutoriaModal
+            visible={modalVisible}
+            onClose={closeModal}
+            onConfirm={handleConfirm}
+          />
         </View>
       </Screen>
     </KeyboardAvoidingView>
-  )
+  );
 }

@@ -2,9 +2,9 @@ import axios from "axios"
 import { API_URL } from "../constants/API"
 
 export const scheduleService = {
-  async getInfo(option) {
+  async getInfo(idUsuario) {
     try {
-      const response = await axios.get(`${API_URL}/${option}`)
+      const response = await axios.get(`${API_URL}/horarios/usuario/${idUsuario}`)
       return response.data
     } catch (error) {
       console.log('Error al obtener la lista información', error)
@@ -39,12 +39,22 @@ export const scheduleService = {
       } else {
         throw new Error("Tipo de asesoría no válido. Debe ser 'PRESENCIAL' o 'VIRTUAL'.");
       }
-      
+
       const response = await axios.post(`${API_URL}/horarios`, payload);
       return response.data;
 
     } catch (error) {
       console.log('Error al crear horario tutoria', error)
+      throw error
+    }
+  },
+
+  async deleteSchedule(idTutoria) {
+    try {
+      const response = await axios.delete(`${API_URL}/horarios/${idTutoria}`)
+      return response.data
+    } catch (error) {
+      console.log('Error al eliminar la tutoría', error)
       throw error
     }
   },
