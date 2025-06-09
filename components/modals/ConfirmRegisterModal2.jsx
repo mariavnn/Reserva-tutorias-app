@@ -6,44 +6,55 @@ import GeneralButton from "../GeneralButton";
 import useCreateTutoriaStore from "../../store/useCreateTutoriaStore";
 import { userInfoService } from "../../service/infoUser";
 import { useUserStore } from "../../store/useUserStore";
+import FailedModal from "./FailedModal";
+import { useRouter } from "expo-router";
 
 export default function ConfirmRegisterModal2({
   visible,
   onClose,
   data,
   onConfirm,
+  type = "edit",
 }) {
-  const { tutoriaData } = useCreateTutoriaStore();
-  const {fetchUserInfo, fetchCareerInfo } = useUserStore();
+  const { fetchUserInfo, fetchCareerInfo } = useUserStore();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const isEdit = type === "edit";
 
-  console.log('DATA ', data);
-
-  const handleOnConfirm = async (data) => {
-    setLoading(true);
-    try {
-      const responde = await userInfoService.editUser(data);
-      fetchUserInfo();
-      fetchCareerInfo();
-    } catch (error) {
-      console.log(error);
-      throw error
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
 
   const handleConfirm = async () => {
     setLoading(true);
     try {
       setLoading(true);
-      await handleOnConfirm(data);
+      if (isEdit) {
+        await onConfirm(data);
+        fetchUserInfo();
+        fetchCareerInfo();
+      } else {
+        console.log("LLAMADO A LA API");
+        console.log("DATA DE LA API ", data);
+        await onConfirm(data);
+      }
+
       setIsConfirmed(true);
-    } catch (error) {
-      console.error("Error al confirmar:", error);
-      setIsConfirmed(false);
       onClose();
+    } catch (error) {
+      setIsConfirmed(false);
+      console.error("Error al confirmar:", error);
+
+      let message = "Error desconocido";
+
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error.message) {
+        message = error.message;
+      }
+
+      setErrorMessage(message);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -52,6 +63,7 @@ export default function ConfirmRegisterModal2({
   const handleClose = () => {
     setIsConfirmed(false);
     onClose();
+    router.back();
   };
 
   return (
@@ -77,6 +89,12 @@ export default function ConfirmRegisterModal2({
 
               <View className="border border-gray-300 rounded-md p-4">
                 <View className="space-y-2">
+                  {data?.typeUser?.label && (
+                    <Text className="text-gray-700">
+                      <Text className="font-semibold">Tipo de Usuario:</Text>{" "}
+                      {data?.typeUser?.label}
+                    </Text>
+                  )}
                   {data?.name && (
                     <Text className="text-gray-700">
                       <Text className="font-semibold">Nombre:</Text>{" "}
@@ -100,6 +118,28 @@ export default function ConfirmRegisterModal2({
                       <Text className="font-semibold">Username:</Text>{" "}
                       {data?.username}
                     </Text>
+                  )}
+                  {data?.career && (
+                    <Text>
+                      <Text className="font-semibold">Carrera:</Text>{" "}
+                      {data?.career}
+                    </Text>
+                  )}
+                  {data.academicLevel?.label && (
+                    <Text>
+                      <Text className="font-semibold">Semestre:</Text>{" "}
+                      {data.academicLevel?.label}
+                    </Text>
+                  )}
+                  {data.subjects && (
+                    <>
+                      <Text className="font-semibold mt-2">
+                        Materias seleccionadas:
+                      </Text>
+                      {data.subjects?.map((m, i) => (
+                        <Text key={i}>• {m.nombreMateria}</Text>
+                      ))}
+                    </>
                   )}
                 </View>
               </View>
@@ -129,10 +169,14 @@ export default function ConfirmRegisterModal2({
               <View className="justify-center items-center my-2">
                 <Feather name="check-circle" size={60} color={"green"} />
                 <Text className="text-xl font-bold text-green-700 mt-3">
-                  ¡Informacion Editada con Éxito!
+                  {isEdit
+                    ? "¡Información editada con éxito!"
+                    : "¡Registro exitoso!"}
                 </Text>
                 <Text className="text-gray-600 text-center mt-1">
-                  La informacion del usuario ha sido actualizada correctamente
+                  {isEdit
+                    ? "La información del usuario ha sido actualizada correctamente."
+                    : "El usuario ha sido registrado correctamente."}
                 </Text>
               </View>
 
@@ -162,6 +206,28 @@ export default function ConfirmRegisterModal2({
                       {data?.username}
                     </Text>
                   )}
+                  {data?.career && (
+                    <Text>
+                      <Text className="font-semibold">Carrera:</Text>{" "}
+                      {data?.career}
+                    </Text>
+                  )}
+                  {data.academicLevel && (
+                    <Text>
+                      <Text className="font-semibold">Semestre:</Text>{" "}
+                      {data.academicLevel}
+                    </Text>
+                  )}
+                  {data.subjects && (
+                    <>
+                      <Text className="font-semibold mt-2">
+                        Materias seleccionadas:
+                      </Text>
+                      {data.subjects?.map((m, i) => (
+                        <Text key={i}>• {m.nombreMateria}</Text>
+                      ))}
+                    </>
+                  )}
                 </View>
 
                 <GeneralButton
@@ -174,6 +240,15 @@ export default function ConfirmRegisterModal2({
           )}
         </View>
       </View>
+
+      <FailedModal
+        visible={error}
+        message={errorMessage}
+        onClose={() => {
+          setError(false);
+          setErrorMessage("");
+        }}
+      />
     </Modal>
   );
 }

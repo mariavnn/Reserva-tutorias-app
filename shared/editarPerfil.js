@@ -70,6 +70,19 @@ export default function EditarInterfaz() {
     // semestre: ''
   };
 
+  const handleOnConfirm = async (data) => {
+    setLoading(true);
+    try {
+      const responde = await userInfoService.editUser(data);
+      fetchUserInfo();
+      fetchCareerInfo();
+    } catch (error) {
+      console.log(error);
+      throw error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (value) => {
      setEditInfo(value);
@@ -174,7 +187,7 @@ export default function EditarInterfaz() {
                   </View>
                   <SizedBox height={18}/>
 
-                  {/* <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
+                  <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
                     <Text className="text-black text-lg font-bold mb-3">
                       Información Académica
                     </Text>
@@ -225,7 +238,7 @@ export default function EditarInterfaz() {
                       </View>
                     
                     </View>
-                  </View> */}
+                  </View>
 
                   <SizedBox height={24}/>
                 </ScrollView>
@@ -247,6 +260,7 @@ export default function EditarInterfaz() {
           setConfirmModal(false);
           formikRef.current?.resetForm();
         }}
+        onConfirm={handleOnConfirm(data)}
         data={editInfo}
       />
 

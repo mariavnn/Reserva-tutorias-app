@@ -9,23 +9,27 @@ import SelectableCard from "../../../../components/SelectableCard";
 import { ScrollView } from "react-native";
 import useRegisterStore from "../../../../store/useRegisterStore";
 import { useState } from "react";
-import ConfirmRegisterModal from "../../../../components/modals/ConfirmRegisterModal";
 import { useRouter } from "expo-router";
-import ConfirmModal from "../../../../components/modals/ConfirmModal";
 import { subjectService } from "../../../../service/subjectsService";
 import { useUserStore } from "../../../../store/useUserStore";
 import { userInfoService } from "../../../../service/infoUser";
 import LoadingIndicator from "../../../../components/LoadingIndicator";
+import ConfirmRegisterModal2 from "../../../../components/modals/ConfirmRegisterModal2";
+import { authService } from "../../../../service/authService";
+import FailedModal from "../../../../components/modals/FailedModal";
 
 export default function AcademicForm() {
-  const { academicData, setAcademicData } = useRegisterStore();
+  const { personalData, academicData, setAcademicData, setPersonalData } = useRegisterStore();
   const { career, setCareer } = useUserStore();
   const [modalVisible, setModalVisible] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
   const userType = useUserStore((state) => state.userType);
   const containerHeight = userType === "Estudiante" ? "h-[70%]" : "h-[82%]";
   const [subjects, setSubjects] = useState([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  
 
   const router = useRouter();
 
@@ -66,7 +70,8 @@ export default function AcademicForm() {
         const career = await userInfoService.getCareer();
         setCareer(career);
       } catch (error) {
-        console.log("Error al obtener la información de las carreras: ", error);
+        setError(true);
+        setErrorMessage(error.message);
       } finally {
         setLoading(false);
       }
@@ -76,132 +81,181 @@ export default function AcademicForm() {
   }, []);
 
   const handleGetSubject = async (idCareer) => {
+    setLoadingSubjects(true);
     try {
-      setLoadingSubjects(true);
       const response = await subjectService.getSubjectByIdCareer(idCareer);
       setSubjects(response);
     } catch (error) {
-      console.error("Error al obtener materias:", error);
+      setError(true);
+      setErrorMessage(error.message);
       setSubjects([]);
     } finally {
       setLoadingSubjects(false);
     }
   };
 
+  const handleRegister = async (data) => {
+    setLoading(true);
+    try {
+      const payload = {
+        roleID: data?.typeUser?.value || 1,
+        name: data?.name || " ",
+        lastName: data?.lastName ||" ",
+        user: data?.username || "",
+        password: data?.password || " ", 
+        email: data?.email || "",
+        semester: data?.academicLevel?.value || 1,
+        subjects: data.subjects?.map((s) => s.idMateria)
+      };
+      const response = await authService.registerUser(payload);
+      setPersonalData({});
+      setAcademicData({});
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const prepareData = (personalData, academicData) => {
+    return {
+      typeUser: personalData?.typeUser,
+      name: personalData?.name,
+      lastName: personalData?.lastName,
+      email: personalData?.email,
+      username: personalData?.userName,
+      password: personalData?.password,
+      career: academicData?.career.label,
+      subjects: academicData?.subjects,
+    };
+  };
+
+  const body = prepareData(personalData, academicData);
   return (
     <>
-      <View>
-        <Formik
-          initialValues={{
-            career: academicData?.career || null,
-            academicLevel: academicData?.academicLevel || null,
-            subjects: academicData?.subjects || [],
-          }}
-          validationSchema={RegisterSchema}
-          onSubmit={(values) => {
-            if (userType === "Estudiante" && !values.academicLevel) {
-              alert("Selecciona un semestre");
-              return;
-            }
-            setAcademicData(values);
-            setModalVisible(true);
-          }}
-        >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            setFieldValue,
-            values,
-            errors,
-            touched,
-          }) => (
-            <View className="w-full">
-              <DropdownInput
-                label="Selecciona la carrera a la que perteneces"
-                selectedValue={values.career}
-                onValueChange={(value) => {
-                  setFieldValue("career", value);
-                  if (value?.value) {
-                    handleGetSubject(value.value);
-                  }
-                }}
-                items={career.map((c) => ({
-                  label: c.careerName,
-                  value: c.careerId,
-                }))}
-                error={errors.career}
-                touched={touched.career}
-                disabled={false}
-              />
-
-              <SizedBox height={12} />
-
-              {userType === "Estudiante" && (
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <LoadingIndicator />
+        </View>
+      ) : (
+        <View>
+          <Formik
+            initialValues={{
+              career: academicData?.career || null,
+              academicLevel: academicData?.academicLevel || null,
+              subjects: academicData?.subjects || [],
+            }}
+            validationSchema={RegisterSchema}
+            onSubmit={(values) => {
+              if (userType === "Estudiante" && !values.academicLevel) {
+                alert("Selecciona un semestre");
+                return;
+              }
+              setAcademicData(values);
+              const body = prepareData(personalData, academicData);
+              setModalVisible(true);
+            }}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              setFieldValue,
+              values,
+              errors,
+              touched,
+            }) => (
+              <View className="w-full">
                 <DropdownInput
-                  label="Selecciona tu semestre actual"
-                  selectedValue={values.academicLevel}
-                  onValueChange={(value) =>
-                    setFieldValue("academicLevel", value)
-                  }
-                  items={semestres}
-                  error={errors.academicLevel}
-                  touched={touched.academicLevel}
+                  label="Selecciona la carrera a la que perteneces"
+                  selectedValue={values.career}
+                  onValueChange={(value) => {
+                    setFieldValue("career", value);
+                    if (value?.value) {
+                      handleGetSubject(value.value);
+                    }
+                  }}
+                  items={(career ?? []).map((c) => ({
+                    label: c.careerName,
+                    value: c.careerId,
+                  }))}
+                  error={errors.career}
+                  touched={touched.career}
                   disabled={false}
                 />
-              )}
 
-              <SizedBox height={12} />
+                <SizedBox height={12} />
 
-              <View className={`${containerHeight} py-2 pb-16`}>
-                <ScrollView keyboardShouldPersistTaps="handled">
-                  {loadingSubjects ? (
-                   <LoadingIndicator/>
-                  ) : subjects.length === 0 ? (
-                    <Text className="text-center text-gray-500 mt-4">
-                      No hay materias disponibles
-                    </Text>
-                  ) : (
-                    subjects.map((subject) => (
-                      <SelectableCard
-                        key={subject.idMateria || subject}
-                        label={subject.nombreMateria || subject}
-                        subject={subject}
-                        value={values.subjects}
-                        onChange={(newSubjects) =>
-                          setFieldValue("subjects", newSubjects)
-                        }
-                      />
-                    ))
-                  )}
-                </ScrollView>
+                {userType === "Estudiante" && (
+                  <DropdownInput
+                    label="Selecciona tu semestre actual"
+                    selectedValue={values.academicLevel}
+                    onValueChange={(value) =>
+                      setFieldValue("academicLevel", value)
+                    }
+                    items={semestres}
+                    error={errors.academicLevel}
+                    touched={touched.academicLevel}
+                    disabled={false}
+                  />
+                )}
+
+                <SizedBox height={12} />
+
+                <View className={`${containerHeight} py-2 pb-16`}>
+                  <ScrollView keyboardShouldPersistTaps="handled">
+                    {loadingSubjects ? (
+                      <LoadingIndicator />
+                    ) : subjects.length === 0 ? (
+                      <Text className="text-center text-gray-500 mt-4">
+                        No hay materias disponibles
+                      </Text>
+                    ) : (
+                      subjects.map((subject) => (
+                        <SelectableCard
+                          key={subject.idMateria || subject}
+                          label={subject.nombreMateria || subject}
+                          subject={subject}
+                          value={values.subjects}
+                          onChange={(newSubjects) =>
+                            setFieldValue("subjects", newSubjects)
+                          }
+                        />
+                      ))
+                    )}
+                  </ScrollView>
+                </View>
+
+                <SizedBox height={12} />
+
+                <View className="absolute bottom-0 w-full px-4 py-2 bg-background-light">
+                  <GeneralButton
+                    title={"Finalizar Registro"}
+                    onPress={handleSubmit}
+                  />
+                </View>
               </View>
-
-              <SizedBox height={12} />
-
-              <View className="absolute bottom-0 w-full px-4 py-2 bg-background-light">
-                <GeneralButton
-                  title={"Finalizar Registro"}
-                  onPress={handleSubmit}
-                />
-              </View>
-            </View>
-          )}
-        </Formik>
-      </View>
-
-      {modalVisible && (
-        <ConfirmRegisterModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onConfirm={() => {
-            setModalVisible(false);
-            setToastVisible(true);
-          }}
-        />
+            )}
+          </Formik>
+        </View>
       )}
 
-      {toastVisible && (
+      
+        <ConfirmRegisterModal2
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onConfirm={handleRegister}
+          data={body}
+          type="Registro"
+        />
+        <FailedModal
+          visible={error}
+          onClose={() => setError(false)}
+          message={errorMessage}
+        />
+      
+
+      {/* {toastVisible && (
         <ConfirmModal
           visible={toastVisible}
           onClose={() => {
@@ -210,7 +264,7 @@ export default function AcademicForm() {
           }}
           message="Registro confirmado con éxito"
         />
-      )}
+      )} */}
     </>
   );
 }

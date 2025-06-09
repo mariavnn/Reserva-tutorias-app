@@ -17,6 +17,7 @@ export const authService = {
 
 
   async registerUser(body) {
+    console.log('BODY ', body);
     try {
       const response = await axios.post(`${API_URL}/auth/register`, body, {
         headers: {

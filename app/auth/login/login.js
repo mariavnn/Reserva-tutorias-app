@@ -20,6 +20,7 @@ import useRegisterStore from "../../../store/useRegisterStore";
 import { BlurView } from "expo-blur";
 import LoadingIndicator from "../../../components/LoadingIndicator";
 import { useUserStore } from "../../../store/useUserStore";
+import FailedModal from "../../../components/modals/FailedModal";
 
 const LoginSchema = yup.object().shape({
   username: yup
@@ -38,6 +39,8 @@ export default function LoginScreen() {
   const login = useLoginStore(state => state.login);
   const { clearData } = useRegisterStore();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [errorText, setErrorText] = useState('');
 
   useEffect(() => {
     clearData();
@@ -66,7 +69,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAuth = async (values) => {
+  const handleAuth = async (values, resetForm) => {
     setLoading(true);
     try {
       const data = {
@@ -100,7 +103,10 @@ export default function LoginScreen() {
         alert(`Token inválido: ${decoded.error}`);
       }
     } catch (error) {
-      console.error("Error en login:", error);
+      setError(true);
+      setLoading(false);
+      setErrorText("Error al iniciar sesion ", error.message);
+      resetForm();
     }finally {
       setLoading(false);
     }
@@ -129,8 +135,8 @@ export default function LoginScreen() {
       <Formik
         initialValues={{ username: '', password: '' }}
         validationSchema={LoginSchema}
-        onSubmit={(values) => {
-          handleAuth(values);
+        onSubmit={(values, { resetForm }) => {
+          handleAuth(values, resetForm);
         }}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
@@ -189,6 +195,11 @@ export default function LoginScreen() {
        <LoadingIndicator/>
       )}
 
+      <FailedModal
+        visible={error}
+        message={errorText}
+        onClose={() => setError(false)}
+      />
     </Screen>
   );
 }
