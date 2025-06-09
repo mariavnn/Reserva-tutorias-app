@@ -15,9 +15,9 @@ import * as yup from 'yup';
 import useCreateTutoriaStore from '../../../../store/useCreateTutoriaStore'
 import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModal'
 import { useRouter } from 'expo-router'
-import { generalInfoService } from '../../../../service/generalInfoService'
 import { scheduleService } from '../../../../service/scheduleService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useFormDataStore } from '../../../../store/useFormTutoriaStore'
 
 const MODALITIES = {
   PRESENCIAL: 'PRESENCIAL',
@@ -75,44 +75,6 @@ const formatDate = (dateString, timeString = '00:00') => {
   const [hours, minutes] = timeString.split(':');
   const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   return `${formattedDate}T${hours}:${minutes}:00`;
-};
-
-// Hook personalizado para manejar datos (se mantiene igual)
-const useFormData = () => {
-  const [subjects, setSubjects] = useState([]);
-  const [blocks, setBlocks] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setIsLoading(true);
-        const [subjectsData, blocksData] = await Promise.all([
-          generalInfoService.getInfo('materias'),
-          generalInfoService.getInfo('bloques')
-        ]);
-
-        setSubjects(subjectsData.map(subject => ({
-          label: subject.subjectName,
-          value: subject.subjectId
-        })));
-
-        setBlocks(blocksData.map(block => ({
-          label: `${block.blockName} (${block.section})`,
-          value: block.blockId.toString(),
-          data: block
-        })));
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, []);
-
-  return { subjects, blocks, isLoading };
 };
 
 // Hook para manejar lógica de formulario (se mantiene igual)
@@ -297,13 +259,17 @@ const useFormLogic = (subjects) => {
 };
 
 export default function CrearTutoriasTutor() {
-  const { subjects, blocks, isLoading } = useFormData();
+  const { subjects, blocks, isLoading, loadInitialData } = useFormDataStore();
   const formLogic = useFormLogic(subjects);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [formValues, setFormValues] = useState(null);
   const router = useRouter();
   const { setTutoriaData } = useCreateTutoriaStore();
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
 
   const closeModal = () => {
     setModalVisible(false);

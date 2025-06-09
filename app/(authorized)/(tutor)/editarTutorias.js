@@ -20,8 +20,8 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
 import { Formik } from 'formik';
 import * as yup from 'yup';
-import { generalInfoService } from '../../../service/generalInfoService';
 import { scheduleService } from '../../../service/scheduleService';
+import { useTutoriaFormStore } from '../../../store/useFormTutoriaStore';
 
 const DAYS_MAP = {
   0: 'DOMINGO', 1: 'LUNES', 2: 'MARTES', 3: 'MIERCOLES',
@@ -57,11 +57,7 @@ const virtualSchema = yup.object().shape({
 });
 
 const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
-  // Base data
-  const [subjects, setSubjects] = useState([]);
-  const [blocks, setBlocks] = useState([]);
-  const [tutoriaData, setTutoriaData] = useState(null);
-  const [loading, setLoading] = useState(false);
+ const { subjects, blocks, tutoriaData, loading, loadData } = useTutoriaFormStore();
   const [saving, setSaving] = useState(false);
 
   // Dynamic filtering data
@@ -69,10 +65,10 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
   const [filteredClassrooms, setFilteredClassrooms] = useState([]);
   const [filteredAvailabilities, setFilteredAvailabilities] = useState([]);
 
-  // Load data when modal opens
+
   useEffect(() => {
     if (visible && tutoriaId) {
-      loadData();
+      loadData(tutoriaId);
     } else {
       resetState();
     }
@@ -84,39 +80,6 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
     setFilteredAvailabilities([]);
   };
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-
-      const [subjectsData, blocksData, tutoriaDetails] = await Promise.all([
-        generalInfoService.getInfo('materias'),
-        generalInfoService.getInfo('bloques'),
-        scheduleService.getScheduleById(tutoriaId)
-      ]);
-
-      // Set subjects
-      setSubjects(subjectsData.map(subject => ({
-        label: subject.subjectName,
-        value: subject.subjectId.toString()
-      })));
-
-      // Set blocks
-      setBlocks(blocksData.map(block => ({
-        label: `${block.blockName} (${block.section})`,
-        value: block.blockId.toString(),
-        data: block
-      })));
-
-      // Set tutoria data
-      setTutoriaData(tutoriaDetails);
-      console.log(tutoriaData)
-
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Get day of week from date string
   const getDayOfWeekFromDate = (dateString) => {

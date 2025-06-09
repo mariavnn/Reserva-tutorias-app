@@ -14,7 +14,7 @@ export const useUserStore = create((set) => ({
   editedPassword: null,
   setEditedPassword: (password) => set({ editedPassword: password }),
 
-   fetchUserInfo: async () => {
+  fetchUserInfo: async () => {
     set({ loading: true });
     try {
       const user = await userInfoService.getUserInfo();

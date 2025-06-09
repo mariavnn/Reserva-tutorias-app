@@ -23,7 +23,33 @@ const mapToSessionCardData = (horarios = []) =>
         : null,
     }));
 
-export const useTutoriaStore = create((set) => ({
+
+const formatearTutorias = (response) => {
+  return (response || [])
+    .map(tutoria => {
+      const fechaObj = new Date(tutoria.fechaHorario);
+      return {
+        id: tutoria.idHorario,
+        nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
+        fecha: fechaObj,
+        fechaFormatted: fechaObj.toLocaleDateString(),
+        horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
+        descripcion: tutoria.descripcion,
+        ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
+        modo: tutoria.modo,
+        tipo: tutoria.tipo,
+        idUsuario: tutoria.usuario?.idUsuario ?? null,
+        agendados: tutoria.agendados ?? [],
+      };
+    })
+    .sort((a, b) => a.fecha - b.fecha)
+    .map(tutoria => ({
+      ...tutoria,
+      fecha: tutoria.fechaFormatted,
+    }));
+}
+
+export const useTutoriaStore = create((set, get) => ({
   sesiones: [],
   tutoriasProfesor: [],
   loading: false,
@@ -58,29 +84,7 @@ export const useTutoriaStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await scheduleService.getInfo();
-      const formattedTutorias = (response || [])
-        .map(tutoria => {
-          const fechaObj = new Date(tutoria.fechaHorario);
-          return {
-            id: tutoria.idHorario,
-            nombreMateria: tutoria.materia?.nombreMateria ?? "Sin nombre",
-            fecha: fechaObj,
-            fechaFormatted: fechaObj.toLocaleDateString(),
-            horario: `${tutoria.horaInicio} - ${tutoria.horaFin}`,
-            descripcion: tutoria.descripcion,
-            ubicacion: `${tutoria.salon?.descripcion ?? ""} - ${tutoria.salon?.ubicacion ?? ""} (${tutoria.salon?.bloque?.seccion ?? ""})`,
-            modo: tutoria.modo,
-            tipo: tutoria.tipo,
-            idUsuario: tutoria.usuario?.idUsuario ?? null,
-            agendados: tutoria.agendados ?? [],
-          };
-        })
-        .sort((a, b) => a.fecha - b.fecha)
-        .map(tutoria => ({
-          ...tutoria,
-          fecha: tutoria.fechaFormatted,
-        }));
-
+      const formattedTutorias = formatearTutorias(response);
       set({ tutoriasProfesor: formattedTutorias });
     } catch (error) {
       console.error('Error cargando tutorías del usuario:', error);
