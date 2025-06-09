@@ -9,6 +9,7 @@ import SuccessModal from '../../../../components/modals/SuccessModal'
 import ConfirmModal2 from '../../../../components/modals/ConfirmModal2'
 import EditarTutoriaTutor from '../editarTutorias'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
+import LoadingIndicator from '../../../../components/LoadingIndicator'
 
 export default function HomeTutor() {
   const [refreshing, setRefreshing] = useState(false);
@@ -18,16 +19,16 @@ export default function HomeTutor() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
-  const { loadUserTutorings, tutoriasProfesor, loading } = useTutoriaStore();
+  const { loadTutoring, loading, activos, finalizados } = useTutoriaStore();
 
   useEffect(() => {
-    loadUserTutorings();
+    loadTutoring();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadUserTutorings().then(() => setRefreshing(false));
-  }, [loadUserTutorings]);
+    loadTutoring().then(() => setRefreshing(false));
+  }, [loadTutoring]);
 
   const handleDelete = async () => {
     try {
@@ -35,7 +36,7 @@ export default function HomeTutor() {
       setSuccessMessage('Tutoría eliminada exitosamente');
       setSuccessVisible(true);
       setConfirmVisible(false);
-      loadUserTutorings();
+      loadTutoring();
     } catch (error) {
       console.error('Error al eliminar la tutoría', error);
     }
@@ -50,13 +51,23 @@ export default function HomeTutor() {
     setSuccessMessage(message);
     setSuccessVisible(true);
     setEditVisible(false);
-    loadUserTutorings();
+    loadTutoring();
   };
 
   const handleCloseEdit = () => {
     setEditVisible(false);
     setSelectedTutoriaId(null);
   };
+
+  if (loading) {
+    return (
+      <Screen>
+        <View className="flex-1 justify-center items-center">
+          <LoadingIndicator size="large" color="#2673DD" />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -73,28 +84,33 @@ export default function HomeTutor() {
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          {tutoriasProfesor.length === 0 ? (
+          {activos.length === 0 ? (
             <View className="flex-1 w-full justify-center">
               <Text className="text-gray-500 text-center text-lg">
                 No tienes tutorías disponibles por el momento
               </Text>
             </View>
           ) : (
-            tutoriasProfesor.map((tutoria) => (
+            activos.map((activo) => (
               <TutoriasCard
-                key={tutoria.id}
-                tutoriaInfo={tutoria}
+                key={activo.idHorario}
+                tutoriaInfo={activo}
                 onDelete={() => {
-                  setSelectedId(tutoria.id);
+                  setSelectedId(activo.idHorario);
                   setConfirmVisible(true);
                 }}
-                onEdit={() => handleEdit(tutoria)}
+                onEdit={() => handleEdit(activo)}
               />
             ))
           )}
         </ScrollView>
 
-        {/* Delete Confirmation Modal */}
+        <SuccessModal
+          visible={successVisible}
+          onClose={() => setSuccessVisible(false)}
+          message={successMessage}
+        />
+
         <ConfirmModal2
           visible={confirmVisible}
           onClose={() => setConfirmVisible(false)}
@@ -102,14 +118,6 @@ export default function HomeTutor() {
           message="¿Estás seguro que deseas eliminar esta tutoría?"
         />
 
-        {/* Success Modal */}
-        <SuccessModal
-          visible={successVisible}
-          onClose={() => setSuccessVisible(false)}
-          message={successMessage}
-        />
-
-        {/* Edit Modal */}
         <EditarTutoriaTutor
           visible={editVisible}
           onClose={handleCloseEdit}

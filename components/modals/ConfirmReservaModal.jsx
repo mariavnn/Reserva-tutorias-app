@@ -2,9 +2,10 @@ import { View, Text, Modal } from 'react-native'
 import React from 'react'
 import { TouchableOpacity } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { quitarSegundos } from '../../constants/Utils';
 
-export default function ConfirmReservaModal({ visible, onClose, onConfirm, data}) {
-    if (!data) return null;
+export default function ConfirmReservaModal({ visible, onClose, onConfirm, data }) {
+  if (!data) return null;
 
   return (
     <Modal
@@ -29,13 +30,13 @@ export default function ConfirmReservaModal({ visible, onClose, onConfirm, data}
 
           {/* Card resumen */}
           <View className="bg-gray-100 p-3 rounded-lg mb-4">
-            <Text className="font-medium mb-2">{data.title}</Text>
-            <Text className="text-sm text-gray-600 mt-1 mb-">{data.tutor}</Text>
+            <Text className="font-medium mb-2">{data?.materia?.nombreMateria}</Text>
+            <Text className="text-sm text-gray-600 mt-1 mb-">{data?.usuario?.nombre} {data?.usuario?.apellido}</Text>
             <View className="flex-row items-center mt-1">
-                <FontAwesome6 name="clock" size={18} color="black" />
-                <Text className="text-sm text-gray-600 ml-1">
-                    {data.starTime}, hasta {data.endTime}
-                </Text>
+              <FontAwesome6 name="clock" size={18} color="black" />
+              <Text className="text-sm text-gray-600 ml-1">
+                {quitarSegundos(data?.horaInicio)}, hasta {quitarSegundos(data?.horaFin)}
+              </Text>
             </View>
           </View>
 

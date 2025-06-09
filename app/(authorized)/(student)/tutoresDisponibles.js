@@ -6,9 +6,9 @@ import { ScrollView } from 'react-native';
 import TutorCard from '../../../components/TutorCard';
 import { router } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useTutorStore } from '../../../store/useTutorStore';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 export default function TutoresDisponibles() {
   const { fetchTutores, tutores, loading, error} = useTutorStore();
@@ -44,8 +44,8 @@ export default function TutoresDisponibles() {
       <View className='w-full flex-1 px-4'>
         <View className="w-full flex-row items-center mt-2">
           <TouchableOpacity onPress={() => router.back()}>
-            <View className="p-3 rounded-full bg-blue-500 justify-center items-center mr-2">
-              <FontAwesome name="arrow-left" size={16} color="white" />
+            <View className="px-3 py-2 rounded-full bg-blue-500 justify-center items-center mr-2">
+              <FontAwesome6 name="arrow-left" size={16} color="white" />
             </View>
           </TouchableOpacity>
           <GeneralTitle

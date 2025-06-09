@@ -21,6 +21,8 @@ import { BlurView } from "expo-blur";
 import LoadingIndicator from "../../../components/LoadingIndicator";
 import { useUserStore } from "../../../store/useUserStore";
 import FailedModal from "../../../components/modals/FailedModal";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import Feather from "@expo/vector-icons/Feather";
 
 const LoginSchema = yup.object().shape({
   username: yup
@@ -144,7 +146,7 @@ export default function LoginScreen() {
             
             <InputField
             label="Usuario"
-            icon={<FontAwesome name="user" size={24} color="gray" />}
+            icon={<FontAwesome6 name="user" size={18} color="gray" />}
             autoCapitalize="none"
             onChangeText={handleChange("username")}
             onBlur={handleBlur("username")}
@@ -159,7 +161,7 @@ export default function LoginScreen() {
           <InputField
             label="Contraseña"
             isPassword= {true}
-            icon={<Entypo name="lock" size={24} color="gray" />}
+            icon={<Feather name="lock" size={20} color="gray" />}
             onChangeText={handleChange("password")}
             onBlur={handleBlur("password")}
             value={values.password}

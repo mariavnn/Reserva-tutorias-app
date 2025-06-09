@@ -14,14 +14,14 @@ import InputField from '../../../components/InputField';
 import InputDate from '../../../components/InputDate';
 import InputHour from '../../../components/InputHour';
 import GeneralButton from '../../../components/GeneralButton';
-import DropdownInput from '../../../components/DropdownInput';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Entypo from '@expo/vector-icons/Entypo';
+import DropdownInput from '../../../components/DropdownInput'
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import { scheduleService } from '../../../service/scheduleService';
 import { useTutoriaFormStore } from '../../../store/useFormTutoriaStore';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Feather from '@expo/vector-icons/Feather';
 
 const DAYS_MAP = {
   0: 'DOMINGO', 1: 'LUNES', 2: 'MARTES', 3: 'MIERCOLES',
@@ -269,7 +269,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
           {/* Header */}
           <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
             <TouchableOpacity onPress={onClose}>
-              <FontAwesome5 name="times" size={24} color="#666" />
+              <FontAwesome6 name="xmark" size={24} color="#666" />
             </TouchableOpacity>
             <Text className="text-lg font-semibold text-blue-500">
               Editar Tutoría {isVirtual ? 'Virtual' : 'Presencial'}
@@ -368,7 +368,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                       {/* Subject - Paso 1 */}
                       <DropdownInput
                         label="Materia"
-                        labelIcon={<FontAwesome5 name="book" size={16} color="black" />}
+                        labelIcon={<Feather name="book"  size={16} color="black" />}
                         items={subjects}
                         selectedValue={values.materia}
                         onValueChange={(item) => setFieldValue('materia', item.value)}
@@ -386,7 +386,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                         onChangeText={(text) => setFieldValue('descripcion', text)}
                         error={errors.descripcion}
                         touched={touched.descripcion}
-                        labelIcon={<FontAwesome5 name="file-alt" size={16} color="black" />}
+                        labelIcon={<FontAwesome6 name="file-alt" size={16} color="black" />}
                         multiline={true}
                         numberOfLines={3}
                       />
@@ -401,7 +401,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                         onChange={(date) => handleDateChange(date, setFieldValue)}
                         error={errors.fecha}
                         touched={touched.fecha}
-                        labelIcon={<FontAwesome5 name="calendar-alt" size={16} color="black" />}
+                        labelIcon={<FontAwesome6 name="calendar" size={16} color="black" />}
                       />
                       {selectedDayOfWeek && (
                         <Text className="text-sm text-gray-600 mt-1">
@@ -420,7 +420,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                             onChange={(hora) => setFieldValue('horaInicio', hora)}
                             error={errors.horaInicio}
                             touched={touched.horaInicio}
-                            labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
+                            labelIcon={<FontAwesome6 name="clock" size={16} color="black" />}
                           />
                           <SizedBox height={16} />
 
@@ -431,7 +431,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                             onChange={(hora) => setFieldValue('horaFin', hora)}
                             error={errors.horaFin}
                             touched={touched.horaFin}
-                            labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
+                            labelIcon={<FontAwesome6 name="clock" size={16} color="black" />}
                             minTime={values.horaInicio}
                           />
                         </>
@@ -443,7 +443,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                           {/* Block - Paso 4 */}
                           <DropdownInput
                             label="Bloque"
-                            labelIcon={<Entypo name="location-pin" size={18} color="black" />}
+                            labelIcon={<Feather name="map-pin" size={18} color="black" />}
                             items={blocks}
                             selectedValue={values.bloque}
                             onValueChange={(item) => handleBlockChange(item, setFieldValue)}
@@ -457,7 +457,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                           {/* Classroom - Paso 5 */}
                           <DropdownInput
                             label="Salón"
-                            labelIcon={<Entypo name="home" size={18} color="black" />}
+                            labelIcon={<FontAwesome6 name="building" size={18} color="black" />}
                             items={filteredClassrooms}
                             selectedValue={values.salon}
                             onValueChange={(item) => handleClassroomChange(item, setFieldValue)}
@@ -471,7 +471,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                           {/* Availability - Paso 6 */}
                           <DropdownInput
                             label="Disponibilidad"
-                            labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
+                            labelIcon={<FontAwesome6 name="clock" size={16} color="black" />}
                             items={filteredAvailabilities}
                             selectedValue={values.disponibilidad}
                             onValueChange={(item) => setFieldValue('disponibilidad', item.value)}
@@ -495,7 +495,6 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
                           <GeneralButton
                             title="Cancelar"
                             onPress={onClose}
-                            variant="outline"
                             disabled={saving}
                           />
                         </View>

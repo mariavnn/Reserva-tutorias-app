@@ -18,6 +18,8 @@ import { useRouter } from 'expo-router'
 import { scheduleService } from '../../../../service/scheduleService'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFormDataStore } from '../../../../store/useFormTutoriaStore'
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
+import Feather from '@expo/vector-icons/Feather'
 
 const MODALITIES = {
   PRESENCIAL: 'PRESENCIAL',
@@ -362,7 +364,7 @@ export default function CrearTutoriasTutor() {
                   {/* Modalidad */}
                   <DropdownInput
                     label="Modalidad"
-                    labelIcon={<FontAwesome5 name="laptop" size={16} color="black" />}
+                    labelIcon={<FontAwesome6 name="laptop" size={16} color="black" />}
                     items={MODALITY_OPTIONS}
                     selectedValue={values.modalidad}
                     onValueChange={(item) => formLogic.handleModalityChange(item, setFieldValue, values)}
@@ -374,7 +376,7 @@ export default function CrearTutoriasTutor() {
                   {/* Materia */}
                   <DropdownInput
                     label="Materia"
-                    labelIcon={<FontAwesome5 name="book" size={16} color="black" />}
+                    labelIcon={<Feather name="book" size={16} color="black" />}
                     items={subjects}
                     selectedValue={values.materia}
                     onValueChange={(item) => setFieldValue('materia', item.label)}
@@ -393,7 +395,7 @@ export default function CrearTutoriasTutor() {
                     onChangeText={(text) => setFieldValue('descripcion', text)}
                     error={errors.descripcion}
                     touched={touched.descripcion}
-                    labelIcon={<FontAwesome5 name="file-alt" size={16} color="black" />}
+                    labelIcon={<FontAwesome6 name="file-alt" size={16} color="black" />}
                     multiline={true}
                     numberOfLines={3}
                   />
@@ -408,7 +410,7 @@ export default function CrearTutoriasTutor() {
                     onChange={(date) => formLogic.handleDateChange(date, setFieldValue)}
                     error={errors.fecha}
                     touched={touched.fecha}
-                    labelIcon={<FontAwesome5 name="calendar-alt" size={16} color="black" />}
+                    labelIcon={<FontAwesome6 name="calendar" size={16} color="black" />}
                   />
                   <SizedBox height={10} />
 

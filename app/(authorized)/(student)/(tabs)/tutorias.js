@@ -14,6 +14,7 @@ import { useTutoriaStore } from '../../../../store/useTutoriasStore';
 import { bookingService } from '../../../../service/bookingService';
 import SuccessModal from '../../../../components/modals/SuccessModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const TutoriasStudent = () => {
   const [selectedTab, setSelectedTab] = useState('Disponibles');
@@ -22,51 +23,37 @@ const TutoriasStudent = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [userBookings, setUserBookings] = useState([]);
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState('');
 
-  const { sesiones, loading, error, loadAvailableTutorings, setError } = useTutoriaStore();
-
-  // Cargar agendadas por el usuario
-  const loadBookings = useCallback(async () => {
-    try {
-      const bookings = await bookingService.getBookingByUserId();
-      setUserBookings(bookings);
-    } catch (err) {
-      console.error('Error al cargar tutorías agendadas:', err);
-    }
-  }, []);
+  const { loading, error, loadTutoring, finalizados, disponibles, agendados } = useTutoriaStore();
 
   useEffect(() => {
-    loadAvailableTutorings();
-    loadBookings();
-  }, [loadAvailableTutorings, loadBookings]);
+    loadTutoring();
+  }, [loadTutoring]);
 
-  const sesionesConEstado = sesiones.map((sesion) => {
-    const booking = userBookings.find((b) => b.scheduleId === sesion.id);
-    if (booking) {
-      return { 
-        ...sesion, 
-        status: 'Agendada',
-        idAgendado: booking.bookingId
-      };
+
+  const getSessionsByTab = () => {
+    switch (selectedTab) {
+      case 'Disponibles':
+        return disponibles;
+      case 'Agendadas':
+        return agendados;
+      case 'Historial':
+        return finalizados;
+      default:
+        return [];
     }
-    return { ...sesion, status: 'Disponible' };
-  });
+  };
 
-  const filteredSessions = sesionesConEstado.filter((s) => {
-    if (selectedTab === 'Disponibles') return s.status === 'Disponible';
-    if (selectedTab === 'Agendadas') return s.status === 'Agendada';
-    return false;
-  });
+  const filteredSessions = getSessionsByTab();
 
   const handleOnJoin = (session) => {
     setSelectedSession(session);
-    setSelectedTutoriaId(session.id);
+    setSelectedTutoriaId(session.idHorario);
 
-    if (session.status === 'Disponible') {
+    if (selectedTab === 'Disponibles') {
       setModalVisible(true);
-    } else if (session.status === 'Agendada') {
+    } else if (selectedTab === 'Agendadas') {
       setModalCancel(true);
     }
   };
@@ -81,9 +68,8 @@ const TutoriasStudent = () => {
       await bookingService.postBookingByUserId(selectedTutoriaId);
       setModalVisible(false);
       setSuccess(true);
-      setMessage("Tutoría agendada exitosamente!")
-      await loadAvailableTutorings();
-      await loadBookings();
+      setMessage("Tutoría agendada exitosamente!");
+      await loadTutoring();
     } catch (err) {
       console.error('Error al agendar tutoría:', err);
       Alert.alert('Error', 'No se pudo agendar la tutoría');
@@ -94,23 +80,19 @@ const TutoriasStudent = () => {
   };
 
   const handleCancel = async () => {
-    console.log('ID de la sesión:', selectedTutoriaId);
-    console.log('ID del agendado:', selectedSession?.idAgendado);
-    
-    if (!selectedSession?.idAgendado) {
+    if (!selectedSession?.agendados?.[0]?.id) {
       Alert.alert('Error', 'No se ha seleccionado una tutoría válida para cancelar');
       return;
     }
 
     try {
-      await bookingService.deleteBookingByUserId(selectedSession.idAgendado);
-      
-      await loadAvailableTutorings();
-      await loadBookings();
+      await bookingService.deleteBookingByUserId(selectedSession.agendados[0].id);
+      await loadTutoring();
       setSuccess(true);
-      setMessage("Tutoría cancelada exitosamente!")
+      setMessage("Tutoría cancelada exitosamente!");
     } catch (err) {
       console.error('Error al cancelar tutoría:', err);
+      Alert.alert('Error', 'No se pudo cancelar la tutoría');
     } finally {
       setModalCancel(false);
       setSelectedSession(null);
@@ -136,7 +118,7 @@ const TutoriasStudent = () => {
           <TouchableOpacity
             onPress={() => {
               setError(null);
-              loadAvailableTutorings();
+              loadTutoring();
             }}
             className="mt-4 bg-blue-500 px-4 py-2 rounded"
           >
@@ -163,7 +145,6 @@ const TutoriasStudent = () => {
         </View>
 
         {/* Buscador y tabs */}
-        {/* <SearchBar /> */}
         <SelectorTabStudent
           tabs={['Disponibles', 'Agendadas', 'Historial']}
           selectedTab={selectedTab}
@@ -173,16 +154,18 @@ const TutoriasStudent = () => {
         {/* Lista de tutorías */}
         <View className="flex-1">
           {filteredSessions.length === 0 ? (
-            <View className="flex-1 justify-center items-center mt-10">
+            <View className="flex-1 justify-center items-center">
+              <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
               <Text className="text-gray-500">No hay tutorías {selectedTab.toLowerCase()}</Text>
             </View>
           ) : (
             <ScrollView>
               {filteredSessions.map((session) => (
                 <ReservarTutoriaCard
-                  key={session.id}
+                  key={session.idHorario}
                   data={session}
                   onJoin={() => handleOnJoin(session)}
+                  status={selectedTab === 'Agendadas' ? 'Agendada' : selectedTab === 'Historial' ? 'Finalizada' : 'Disponible'}
                 />
               ))}
             </ScrollView>
@@ -191,7 +174,6 @@ const TutoriasStudent = () => {
       </View>
 
       {/* Modales */}
-
       <SuccessModal
         visible={success}
         onClose={() => setSuccess(false)}
@@ -213,7 +195,6 @@ const TutoriasStudent = () => {
         visible={modalCancel}
         data={selectedSession}
         onClose={() => {
-          console.log(selectedSession)
           setModalCancel(false);
           setSelectedSession(null);
           setSelectedTutoriaId(null);
