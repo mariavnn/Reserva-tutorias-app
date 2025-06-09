@@ -30,6 +30,20 @@ export const scheduleService = {
     }
   },
 
+  async getScheduleByFilter() {
+    try {
+      const userId = await AsyncStorage.getItem('UserId');
+      const response = await axios.get(`${API_URL}/horarios/filtrar-por-usuario/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  },
+
   async postSchedule(scheduleData) {
     try {
       let payload = {};

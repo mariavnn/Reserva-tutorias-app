@@ -2,7 +2,6 @@ import { View, Text } from 'react-native'
 import React, { useEffect } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
-import SearchBar from '../../../../components/SearchBar'
 import { ScrollView } from 'react-native'
 import TutorCard from '../../../../components/TutorCard'
 import { TouchableOpacity } from 'react-native'
@@ -16,11 +15,11 @@ import { useUserStore } from '../../../../store/useUserStore'
 export default function HomeStudent() {
   const { fetchTutores, tutores, loading, error } = useTutorStore();
   const { fetchUserInfo, userInfo } = useUserStore();
-  const { sesiones, loading: loadingTutorias, error: errorTutorias, loadAvailableTutorings } = useTutoriaStore();
+  const { loading: loadingTutorias, error: errorTutorias, disponibles, loadTutoring } = useTutoriaStore();
 
   useEffect(() => {
     fetchTutores();
-    loadAvailableTutorings();
+    loadTutoring();
     fetchUserInfo();
   }, [])
 
@@ -29,7 +28,7 @@ export default function HomeStudent() {
     return shuffled.slice(0, 4);
   };
 
-  if (loading) {
+  if (loading || loadingTutorias) {
     return (
       <Screen>
         <View className="flex-1 justify-center items-center">
@@ -48,7 +47,6 @@ export default function HomeStudent() {
           className='!text-blue-500 mt-4'
         />
         <Text className='text-gray-500 mt-2'>Aprende con tus tutores favoritos</Text>
-        {/* <SearchBar/> */}
         <View className="w-full h-2/5 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutores Populares</Text>
@@ -85,7 +83,7 @@ export default function HomeStudent() {
           <ScrollView>
             <View className='flex-row flex-wrap justify-between'>
               {
-                getRandom(sesiones).map((session) => {
+                getRandom(disponibles).map((session) => {
                   return (
                     <PopularTutorias
                       key={session.id}

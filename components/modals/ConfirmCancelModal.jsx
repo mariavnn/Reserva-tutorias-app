@@ -1,4 +1,5 @@
 import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { quitarSegundos } from '../../constants/Utils';
 
 export default function ConfirmCancelModal({ visible, onClose, onConfirm, data }) {
   if (!data) return null;
@@ -22,9 +23,9 @@ export default function ConfirmCancelModal({ visible, onClose, onConfirm, data }
 
           {/* Resumen */}
           <View className="bg-gray-100 p-3 rounded-lg mb-4">
-            <Text className="font-medium">{data.title}</Text>
-            <Text className="text-sm text-gray-600 mt-1">{data.tutor}</Text>
-            <Text className="text-sm text-gray-600 mt-1">{data.starTime}, hasta {data.endTime}</Text>
+            <Text className="font-medium">{data?.materia?.nombreMateria}</Text>
+            <Text className="text-sm text-gray-600 mt-1">{data?.usuario?.nombre} {data?.usuario?.apellido}</Text>
+            <Text className="text-sm text-gray-600 mt-1">{quitarSegundos(data?.horaInicio)}, hasta {quitarSegundos(data?.horaFin)}</Text>
           </View>
 
           {/* Botones */}

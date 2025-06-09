@@ -2,6 +2,8 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { TouchableOpacity } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
 export default function TutorCard({ data, onPress }) {
@@ -14,7 +16,7 @@ export default function TutorCard({ data, onPress }) {
       <View className="flex-row items-center space-x-3">
         <View className="relative">
         <View className="w-14 h-14 rounded-full bg-gray-200 justify-center items-center">
-          <FontAwesome name="user" size={25} color="#2673DD" />
+          <FontAwesome6 name="user" solid size={23} color="#2673DD" />
         </View>
           <View className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
         </View>
@@ -25,10 +27,11 @@ export default function TutorCard({ data, onPress }) {
               {data.name}
             </Text>
             <View className="flex-row items-center ml-2">
-              <FontAwesome name="star" size={12} color="#facc15" />
-              <Text className="text-sm font-medium text-gray-600 ml-1">
+            
+              <Text className="text-sm font-medium text-gray-600 mr-1">
                 {data.rating.toFixed(1)}
               </Text>
+                <FontAwesome6 name="star" solid size={12} color="#facc15" />
             </View>
           </View>
 
