@@ -43,7 +43,7 @@ export default function HomeStudent() {
     <Screen>
       <View className='w-full flex-1 px-4'>
         <GeneralTitle
-          label={`Bienvenido, ${userInfo.name}`}
+          label={`Bienvenido, ${userInfo?.name}`}
           type='primary'
           className='!text-blue-500 mt-4'
         />
