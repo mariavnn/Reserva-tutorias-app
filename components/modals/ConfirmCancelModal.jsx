@@ -24,11 +24,11 @@ export default function ConfirmCancelModal({ visible, onClose, onConfirm, data }
           <View className="bg-gray-100 p-3 rounded-lg mb-4">
             <Text className="font-medium">{data.title}</Text>
             <Text className="text-sm text-gray-600 mt-1">{data.tutor}</Text>
-            <Text className="text-sm text-gray-600 mt-1">Hasta {data.endTime}</Text>
+            <Text className="text-sm text-gray-600 mt-1">{data.starTime}, hasta {data.endTime}</Text>
           </View>
 
           {/* Botones */}
-          <View className="flex-row justify-around space-x-3">
+          <View className="flex-row justify-center gap-5">
             <TouchableOpacity
               onPress={onClose}
               className="bg-gray-200 px-4 py-2 rounded-lg"

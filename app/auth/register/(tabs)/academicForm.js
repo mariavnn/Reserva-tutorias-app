@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import React, { useEffect } from "react";
 import DropdownInput from "../../../../components/DropdownInput";
 import { Formik } from "formik";

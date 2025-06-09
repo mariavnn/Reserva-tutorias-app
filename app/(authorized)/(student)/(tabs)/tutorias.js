@@ -1,9 +1,8 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import SearchBar from '../../../../components/SearchBar';
 import { useState } from 'react';
 import SelectorTabStudent from '../../../../components/SelectorTabStudent';
 import { ScrollView } from 'react-native';
@@ -11,40 +10,111 @@ import ReservarTutoriaCard from '../../../../components/ReservarTutoriaCard';
 import ConfirmReservaModal from '../../../../components/modals/ConfirmReservaModal';
 import ConfirmCancelModal from '../../../../components/modals/ConfirmCancelModal';
 import { router } from 'expo-router';
-import { scheduleService } from '../../../../service/scheduleService';
 import { useTutoriaStore } from '../../../../store/useTutoriasStore';
+import { bookingService } from '../../../../service/bookingService';
+import SuccessModal from '../../../../components/modals/SuccessModal';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 
 const TutoriasStudent = () => {
   const [selectedTab, setSelectedTab] = useState('Disponibles');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalCancel, setModalCancel] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [userBookings, setUserBookings] = useState([]);
+  const [message, setMessage] = useState('')
 
-  const { sesiones, loading, error, loadAvailableTutorings } = useTutoriaStore();
+  const { sesiones, loading, error, loadAvailableTutorings, setError } = useTutoriaStore();
 
-  useEffect(() => {
-    loadAvailableTutorings();
+  // Cargar agendadas por el usuario
+  const loadBookings = useCallback(async () => {
+    try {
+      const bookings = await bookingService.getBookingByUserId();
+      setUserBookings(bookings);
+    } catch (err) {
+      console.error('Error al cargar tutorías agendadas:', err);
+    }
   }, []);
 
   useEffect(() => {
-    if (selectedTab === 'Disponibles') {
-      loadAvailableTutorings();
-    }
-    // Aquí podrías cargar agendadas o historial en el futuro
-  }, [selectedTab, loadAvailableTutorings]);
+    loadAvailableTutorings();
+    loadBookings();
+  }, [loadAvailableTutorings, loadBookings]);
 
-  const filteredSessions = sesiones.filter((session) => {
-    if (selectedTab === 'Disponibles') return session.status === 'Disponible';
-    if (selectedTab === 'Agendadas') return session.status === 'Agendada';
-    return false; // Para el caso de 'Historial'
+  const sesionesConEstado = sesiones.map((sesion) => {
+    const booking = userBookings.find((b) => b.scheduleId === sesion.id);
+    if (booking) {
+      return { 
+        ...sesion, 
+        status: 'Agendada',
+        idAgendado: booking.bookingId
+      };
+    }
+    return { ...sesion, status: 'Disponible' };
   });
 
-  const handleOnJoin = (data) => {
-    setSelectedSession(data);
-    if (data.status === 'Disponible') {
+  const filteredSessions = sesionesConEstado.filter((s) => {
+    if (selectedTab === 'Disponibles') return s.status === 'Disponible';
+    if (selectedTab === 'Agendadas') return s.status === 'Agendada';
+    return false;
+  });
+
+  const handleOnJoin = (session) => {
+    setSelectedSession(session);
+    setSelectedTutoriaId(session.id);
+
+    if (session.status === 'Disponible') {
       setModalVisible(true);
-    } else if (data.status === 'Agendada') {
+    } else if (session.status === 'Agendada') {
       setModalCancel(true);
+    }
+  };
+
+  const handleBooking = async () => {
+    if (!selectedTutoriaId) {
+      Alert.alert('Error', 'No se ha seleccionado una tutoría válida');
+      return;
+    }
+
+    try {
+      await bookingService.postBookingByUserId(selectedTutoriaId);
+      setModalVisible(false);
+      setSuccess(true);
+      setMessage("Tutoría agendada exitosamente!")
+      await loadAvailableTutorings();
+      await loadBookings();
+    } catch (err) {
+      console.error('Error al agendar tutoría:', err);
+      Alert.alert('Error', 'No se pudo agendar la tutoría');
+    } finally {
+      setSelectedSession(null);
+      setSelectedTutoriaId(null);
+    }
+  };
+
+  const handleCancel = async () => {
+    console.log('ID de la sesión:', selectedTutoriaId);
+    console.log('ID del agendado:', selectedSession?.idAgendado);
+    
+    if (!selectedSession?.idAgendado) {
+      Alert.alert('Error', 'No se ha seleccionado una tutoría válida para cancelar');
+      return;
+    }
+
+    try {
+      await bookingService.deleteBookingByUserId(selectedSession.idAgendado);
+      
+      await loadAvailableTutorings();
+      await loadBookings();
+      setSuccess(true);
+      setMessage("Tutoría cancelada exitosamente!")
+    } catch (err) {
+      console.error('Error al cancelar tutoría:', err);
+    } finally {
+      setModalCancel(false);
+      setSelectedSession(null);
+      setSelectedTutoriaId(null);
     }
   };
 
@@ -52,7 +122,7 @@ const TutoriasStudent = () => {
     return (
       <Screen>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#2673DD" />
+          <LoadingIndicator size="large" color="#2673DD" />
         </View>
       </Screen>
     );
@@ -121,23 +191,34 @@ const TutoriasStudent = () => {
       </View>
 
       {/* Modales */}
+
+      <SuccessModal
+        visible={success}
+        onClose={() => setSuccess(false)}
+        message={message}
+      />
+
       <ConfirmReservaModal
         visible={modalVisible}
         data={selectedSession}
-        onClose={() => setModalVisible(false)}
-        onConfirm={() => {
+        onClose={() => {
           setModalVisible(false);
-          // Aquí puedes actualizar el estado o recargar
+          setSelectedSession(null);
+          setSelectedTutoriaId(null);
         }}
+        onConfirm={handleBooking}
       />
 
       <ConfirmCancelModal
         visible={modalCancel}
         data={selectedSession}
-        onClose={() => setModalCancel(false)}
-        onConfirm={() => {
+        onClose={() => {
+          console.log(selectedSession)
           setModalCancel(false);
+          setSelectedSession(null);
+          setSelectedTutoriaId(null);
         }}
+        onConfirm={handleCancel}
       />
     </Screen>
   );

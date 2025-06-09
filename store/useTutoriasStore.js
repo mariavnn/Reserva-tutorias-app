@@ -71,7 +71,6 @@ export const useTutoriaStore = create((set, get) => ({
       });
       const sesionesMapeadas = mapToSessionCardData(data);
       set({ sesiones: sesionesMapeadas });
-      console.log(message, data);
     } catch (err) {
       console.error('Error al cargar tutorías:', err);
       set({ error: 'Error al cargar las tutorías disponibles' });

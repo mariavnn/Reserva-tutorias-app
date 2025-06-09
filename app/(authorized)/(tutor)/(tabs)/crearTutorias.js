@@ -310,12 +310,8 @@ export default function CrearTutoriasTutor() {
 
       const completeData = { ...tutoriaData, userId };
 
-      console.log('Datos a enviar:', JSON.stringify(completeData, null, 2));
-
-      const response = await scheduleService.postSchedule(completeData);
-      console.log('Tutoría creada:', response);
-
-      // No cerramos el modal aquí, dejamos que muestre el estado de éxito
+      await scheduleService.postSchedule(completeData);
+      handleSuccessClose();
     } catch (error) {
       console.error('Error al crear tutoría:', error);
       setModalVisible(false);
@@ -326,6 +322,7 @@ export default function CrearTutoriasTutor() {
 
   const handleSuccessClose = () => {
     setModalVisible(false);
+    loadInitialData();
     router.back();
   };
 

@@ -1,8 +1,9 @@
-import { View, Text, Modal, ScrollView, ActivityIndicator } from 'react-native'
+import { View, Text, Modal, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import useRegisterStore from '../../store/useRegisterStore';
 import GeneralButton from '../GeneralButton';
 import { authService, registerService } from '../../service/authService';
+import LoadingIndicator from '../LoadingIndicator';
 
 export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
     const { personalData, academicData } = useRegisterStore();
@@ -63,7 +64,7 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
                 </ScrollView>
 
                 {loading && (
-                    <ActivityIndicator size="large" color="#000" className="mt-4" />
+                    <LoadingIndicator size="large" color="#000" className="mt-4" />
                 )}
 
                 <View className="mt-4 flex flex-row  justify-between w-full">

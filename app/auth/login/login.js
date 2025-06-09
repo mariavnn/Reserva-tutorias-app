@@ -1,4 +1,4 @@
-import { View, Text, Button, TouchableOpacity, TextInput, Modal, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import "../../../global.css";
 import SelectorTab from "../../../components/SelectorTab";

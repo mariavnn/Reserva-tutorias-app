@@ -6,20 +6,26 @@ export const scheduleService = {
   async getInfo() {
     try {
       const userId = await AsyncStorage.getItem('UserId');
-      const response = await axios.get(`${API_URL}/horarios/usuario/${userId}`)
+      const response = await axios.get(`${API_URL}/horarios/usuario/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data
     } catch (error) {
-      console.log('Error al obtener la lista información', error)
       throw error
     }
   },
 
   async getScheduleById(idTutoria) {
     try {
-      const response = await axios.get(`${API_URL}/horarios/${idTutoria}`)
+      const response = await axios.get(`${API_URL}/horarios/${idTutoria}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data
     } catch (error) {
-      console.log('Error al obtener la tutoria', error)
       throw error
     }
   },
@@ -53,11 +59,14 @@ export const scheduleService = {
         throw new Error("Tipo de asesoría no válido. Debe ser 'PRESENCIAL' o 'VIRTUAL'.");
       }
 
-      const response = await axios.post(`${API_URL}/horarios`, payload);
+      const response = await axios.post(`${API_URL}/horarios`, payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
 
     } catch (error) {
-      console.log('Error al crear horario tutoria', error)
       throw error
     }
   },
@@ -91,21 +100,27 @@ export const scheduleService = {
         throw new Error("Tipo de asesoría no válido. Debe ser 'PRESENCIAL' o 'VIRTUAL'.");
       }
 
-      const response = await axios.put(`${API_URL}/horarios/${idTutoria}`, payload);
+      const response = await axios.put(`${API_URL}/horarios/${idTutoria}`, payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
 
     } catch (error) {
-      console.log('Error al editar horario tutoria', error)
       throw error
     }
   },
 
   async deleteSchedule(idTutoria) {
     try {
-      const response = await axios.delete(`${API_URL}/horarios/${idTutoria}`)
+      const response = await axios.delete(`${API_URL}/horarios/${idTutoria}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data
     } catch (error) {
-      console.log('Error al eliminar la tutoría', error)
       throw error
     }
   },
@@ -146,9 +161,12 @@ export const scheduleService = {
       }
 
       const url = `${API_URL}/horarios/filtro?${params.toString()}`;
-      console.log('Fetching tutoring sessions with URL:', url);
 
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
       console.error('Error filtering tutoring sessions:', error.response?.data || error.message);

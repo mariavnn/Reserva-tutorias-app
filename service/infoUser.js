@@ -6,7 +6,11 @@ export const userInfoService = {
   async getUserInfo() {
     try {
       const userId = await AsyncStorage.getItem("UserId");
-      const response = await axios.get(`${API_URL}/usuarios/${userId}`);
+      const response = await axios.get(`${API_URL}/usuarios/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -15,7 +19,11 @@ export const userInfoService = {
 
   async getCareer() {
     try {
-      const response = await axios.get(`${API_URL}/carreras`);
+      const response = await axios.get(`${API_URL}/carreras`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -25,24 +33,30 @@ export const userInfoService = {
   async editUser(body) {
     try {
       const userId = await AsyncStorage.getItem("UserId");
-      console.log('body axios ', body);
       if (!userId) {
         throw new Error("UserId not found in AsyncStorage");
       }
-      const response = await axios.put(`${API_URL}/usuarios/${userId}`, body);
+      const response = await axios.put(`${API_URL}/usuarios/${userId}`, body, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
       throw error;
     }
   },
-  
+
   async getProfesoresCompatibles() {
     try {
       const userId = await AsyncStorage.getItem('UserId');
-      const response = await axios.get(`${API_URL}/usuarios/profesores-compatibles/${userId}`)
+      const response = await axios.get(`${API_URL}/usuarios/profesores-compatibles/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
-      console.log('Error al obtener la lista de materias ', error)
       throw error
     }
   },

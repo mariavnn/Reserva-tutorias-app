@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  ActivityIndicator
 } from 'react-native';
 
 import SizedBox from '../../../components/SizedBox';
@@ -22,6 +21,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import { scheduleService } from '../../../service/scheduleService';
 import { useTutoriaFormStore } from '../../../store/useFormTutoriaStore';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const DAYS_MAP = {
   0: 'DOMINGO', 1: 'LUNES', 2: 'MARTES', 3: 'MIERCOLES',
@@ -241,8 +241,6 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
         };
       }
 
-      console.log('Updating tutoria with data:', updateData);
-
       await scheduleService.updateSchedule(tutoriaData.scheduleId, updateData);
 
       onSuccess?.('Tutoría actualizada exitosamente');
@@ -281,7 +279,7 @@ const EditTutoriaModal = ({ visible, onClose, tutoriaId, onSuccess }) => {
 
           {loading ? (
             <View className="flex-1 justify-center items-center">
-              <ActivityIndicator size="large" color="#3B82F6" />
+              <LoadingIndicator size="large" color="#3B82F6" />
               <Text className="mt-2 text-gray-500">Cargando datos...</Text>
             </View>
           ) : (

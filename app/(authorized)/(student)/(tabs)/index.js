@@ -10,27 +10,46 @@ import PopularTutorias from '../../../../components/PopularTutorias'
 import { router } from 'expo-router'
 import { useTutorStore } from '../../../../store/useTutorStore'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
+import LoadingIndicator from '../../../../components/LoadingIndicator'
+import { useUserStore } from '../../../../store/useUserStore'
 
 export default function HomeStudent() {
-  const { fetchTutores, tutores, loading, error} = useTutorStore();
+  const { fetchTutores, tutores, loading, error } = useTutorStore();
+  const { fetchUserInfo, userInfo } = useUserStore();
   const { sesiones, loading: loadingTutorias, error: errorTutorias, loadAvailableTutorings } = useTutoriaStore();
 
-  useEffect(()=> {
+  useEffect(() => {
     fetchTutores();
     loadAvailableTutorings();
+    fetchUserInfo();
   }, [])
+
+  const getRandom = (data) => {
+    const shuffled = [...data].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 4);
+  };
+
+  if (loading) {
+    return (
+      <Screen>
+        <View className="flex-1 justify-center items-center">
+          <LoadingIndicator size="large" color="#2673DD" />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
       <View className='w-full flex-1 px-4'>
         <GeneralTitle
-          label={"Bienvenido, Carlos"}
+          label={`Bienvenido, ${userInfo.name}`}
           type='primary'
           className='!text-blue-500 mt-4'
         />
         <Text className='text-gray-500 mt-2'>Aprende con tus tutores favoritos</Text>
         {/* <SearchBar/> */}
-        <View className= "w-full h-2/5 mt-5">
+        <View className="w-full h-2/5 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutores Populares</Text>
             <TouchableOpacity onPress={() => router.push("/(authorized)/(student)/tutoresDisponibles")}>
@@ -42,18 +61,18 @@ export default function HomeStudent() {
 
           <ScrollView>
             {
-              tutores.map((tutor) => {
+              getRandom(tutores).map((tutor) => {
                 return (
                   <TutorCard
                     key={tutor.id}
                     data={tutor}
                   />
                 )
-              })   
+              })
             }
           </ScrollView>
         </View>
-        <View className= "w-full h-2/4 mt-5">
+        <View className="w-full h-2/4 mt-5">
           <View className="w-full mb-3 flex-row justify-between items-center">
             <Text className="text-blue-500 text-xl font-semibold">Tutorias Populares</Text>
             <TouchableOpacity onPress={() => router.push('/(student)/tutorias')}>
@@ -62,23 +81,23 @@ export default function HomeStudent() {
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           <ScrollView>
             <View className='flex-row flex-wrap justify-between'>
               {
-                sesiones.map((session) => {
+                getRandom(sesiones).map((session) => {
                   return (
                     <PopularTutorias
                       key={session.id}
                       data={session}
                     />
                   )
-                })          
+                })
               }
             </View>
           </ScrollView>
         </View>
-      </View>  
+      </View>
     </Screen>
   )
 }

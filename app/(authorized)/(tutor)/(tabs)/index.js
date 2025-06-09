@@ -50,7 +50,7 @@ export default function HomeTutor() {
     setSuccessMessage(message);
     setSuccessVisible(true);
     setEditVisible(false);
-    loadData();
+    loadUserTutorings();
   };
 
   const handleCloseEdit = () => {
