@@ -11,6 +11,7 @@ import { useTutorStore } from '../../../../store/useTutorStore'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 import LoadingIndicator from '../../../../components/LoadingIndicator'
 import { useUserStore } from '../../../../store/useUserStore'
+import Feather from '@expo/vector-icons/Feather';
 
 export default function HomeStudent() {
   const { fetchTutores, tutores, loading, error } = useTutorStore();
@@ -58,16 +59,24 @@ export default function HomeStudent() {
           </View>
 
           <ScrollView>
-            {
-              getRandom(tutores).map((tutor) => {
-                return (
-                  <TutorCard
-                    key={tutor.id}
-                    data={tutor}
-                  />
-                )
-              })
-            }
+            {tutores?.length == 0 ? (
+              <View className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                <Feather name="users" size={40} color={'#6b7280'} />
+                <Text className="text-lg font-medium text-gray-900 mb-2">
+                  No hay tutores disponibles
+                </Text>
+                <Text className="text-gray-500 text-center max-w-sm">
+                  Los tutores deberán aparecer cuando tengas materias relacionadas.
+                </Text>
+              </View>
+            ) : (
+              getRandom(tutores).map((tutor) => (
+                <TutorCard
+                  key={tutor.id}
+                  data={tutor}
+                />
+              ))
+            )}
           </ScrollView>
         </View>
         <View className="w-full h-2/4 mt-5">
@@ -79,19 +88,26 @@ export default function HomeStudent() {
               </Text>
             </TouchableOpacity>
           </View>
-
           <ScrollView>
             <View className='flex-row flex-wrap justify-between'>
-              {
-                getRandom(disponibles).map((tutoria) => {
-                  return (
-                    <PopularTutorias
-                      key={tutoria.idHorario}
-                      data={tutoria}
-                    />
-                  )
-                })
-              }
+              {disponibles?.length == 0 ? (
+                <View className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                  <Feather name="book-open" size={40} color={'#6b7280'} />
+                  <Text className="text-lg font-medium text-gray-900 mb-2">
+                    No hay tutorías disponibles
+                  </Text>
+                  <Text className="text-gray-500 text-center max-w-sm">
+                    Las tutorías estarán disponibles cuando tu tutor cree alguna.
+                  </Text>
+                </View>
+              ) : (
+                getRandom(disponibles).map((tutoria) => (
+                  <PopularTutorias
+                    key={tutoria.idHorario}
+                    data={tutoria}
+                  />
+                ))
+              )}
             </View>
           </ScrollView>
         </View>

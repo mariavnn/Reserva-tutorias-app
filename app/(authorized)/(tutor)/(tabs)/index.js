@@ -11,6 +11,8 @@ import EditarTutoriaTutor from '../editarTutorias'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 import LoadingIndicator from '../../../../components/LoadingIndicator'
 import SelectorTabStudent from '../../../../components/SelectorTabStudent'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
 
 export default function HomeTutor() {
   const [refreshing, setRefreshing] = useState(false);
@@ -104,10 +106,10 @@ export default function HomeTutor() {
             onSelect={setSelectedTab}
           />
           {filteredTutorias.length === 0 ? (
-            <View className="flex-1 w-full justify-center mt-48">
+            <View className="flex-1 w-full items-center mt-48">
               <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
               <Text className="text-gray-500 text-center text-lg">
-                No tienes tutorías disponibles por el momento
+                No tienes tutorías creadas por el momento
               </Text>
             </View>
           ) : (

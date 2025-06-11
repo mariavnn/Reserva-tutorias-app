@@ -9,6 +9,7 @@ import { TouchableOpacity } from 'react-native';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useTutorStore } from '../../../store/useTutorStore';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function TutoresDisponibles() {
   const { fetchTutores, tutores, loading, error} = useTutorStore();
@@ -56,16 +57,24 @@ export default function TutoresDisponibles() {
         </View>
         <View className="flex-1 mt-5">
           <ScrollView>
-            {
-              tutores.map((tutor) => {
-                return (
-                  <TutorCard
-                    key={tutor.id}
-                    data={tutor}
-                  />
-                )
-              })
-            }
+            {tutores?.length == 0 ? (
+              <View className="flex flex-col items-center justify-center mt-40 py-12 px-6 text-center">
+                <Feather name="users" size={40} color={'#6b7280'} />
+                <Text className="text-lg font-medium text-gray-900 mb-2">
+                  No hay tutores disponibles
+                </Text>
+                <Text className="text-gray-500 text-center max-w-sm">
+                  Los tutores deberán aparecer cuando tengas materias relacionadas.
+                </Text>
+              </View>
+            ) : (
+              tutores.map((tutor) => (
+                <TutorCard
+                  key={tutor.id}
+                  data={tutor}
+                />
+              ))
+            )}
           </ScrollView>
         </View>
       </View>
