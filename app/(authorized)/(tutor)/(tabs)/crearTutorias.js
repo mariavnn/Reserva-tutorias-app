@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFormDataStore } from '../../../../store/useFormTutoriaStore'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 import Feather from '@expo/vector-icons/Feather'
+import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 
 const MODALITIES = {
   PRESENCIAL: 'PRESENCIAL',
@@ -262,6 +263,7 @@ const useFormLogic = (subjects) => {
 
 export default function CrearTutoriasTutor() {
   const { subjects, blocks, isLoading, loadInitialData } = useFormDataStore();
+  const { loadTutoring } = useTutoriaStore();
   const formLogic = useFormLogic(subjects);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -325,6 +327,7 @@ export default function CrearTutoriasTutor() {
   const handleSuccessClose = () => {
     setModalVisible(false);
     loadInitialData();
+    loadTutoring()
     router.back();
   };
 

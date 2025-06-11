@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import { ScrollView } from 'react-native'
@@ -12,11 +12,20 @@ import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 import LoadingIndicator from '../../../../components/LoadingIndicator'
 import { useUserStore } from '../../../../store/useUserStore'
 import Feather from '@expo/vector-icons/Feather';
+import { bookingService } from '../../../../service/bookingService'
+import SuccessModal from '../../../../components/modals/SuccessModal'
+import ConfirmReservaModal from '../../../../components/modals/ConfirmReservaModal'
 
 export default function HomeStudent() {
   const { fetchTutores, tutores, loading, error } = useTutorStore();
   const { fetchUserInfo, userInfo } = useUserStore();
   const { loading: loadingTutorias, error: errorTutorias, disponibles, loadTutoring } = useTutoriaStore();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchTutores();
@@ -27,6 +36,34 @@ export default function HomeStudent() {
   const getRandom = (data) => {
     const shuffled = [...data].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 4);
+  };
+
+  const handleOnJoin = (session) => {
+    setSelectedSession(session);
+    setSelectedTutoriaId(session.idHorario);
+
+    setModalVisible(true);
+  };
+
+  const handleBooking = async () => {
+    if (!selectedTutoriaId) {
+      Alert.alert('Error', 'No se ha seleccionado una tutoría válida');
+      return;
+    }
+
+    try {
+      await bookingService.postBookingByUserId(selectedTutoriaId);
+      setModalVisible(false);
+      setSuccess(true);
+      setMessage("Tutoría agendada exitosamente!");
+      await loadTutoring();
+    } catch (err) {
+      console.error('Error al agendar tutoría:', err);
+      Alert.alert('Error', 'No se pudo agendar la tutoría');
+    } finally {
+      setSelectedSession(null);
+      setSelectedTutoriaId(null);
+    }
   };
 
   if (loading || loadingTutorias) {
@@ -105,6 +142,7 @@ export default function HomeStudent() {
                   <PopularTutorias
                     key={tutoria.idHorario}
                     data={tutoria}
+                    onJoin={() => handleOnJoin(tutoria)}
                   />
                 ))
               )}
@@ -112,6 +150,24 @@ export default function HomeStudent() {
           </ScrollView>
         </View>
       </View>
+
+      {/* Modales */}
+      <SuccessModal
+        visible={success}
+        onClose={() => setSuccess(false)}
+        message={message}
+      />
+
+      <ConfirmReservaModal
+        visible={modalVisible}
+        data={selectedSession}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedSession(null);
+          setSelectedTutoriaId(null);
+        }}
+        onConfirm={handleBooking}
+      />
     </Screen>
   )
 }

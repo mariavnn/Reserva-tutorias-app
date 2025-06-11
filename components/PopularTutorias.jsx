@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import { TouchableOpacity } from 'react-native';
 
 
-export default function PopularTutorias({ data }) {
+export default function PopularTutorias({ data, onJoin }) {
   return (
     <View className="w-[48%] bg-white rounded-xl shadow-sm mb-4 overflow-hidden flex flex-col">
       <View className="p-3 flex-1">
@@ -13,6 +13,7 @@ export default function PopularTutorias({ data }) {
       </View>
 
       <TouchableOpacity
+        onPress={onJoin}
         className="bg-blue-500 py-2 justify-center items-center"
       >
         <Text className="text-white font-medium">Unirse</Text>
