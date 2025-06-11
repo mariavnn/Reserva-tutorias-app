@@ -10,6 +10,7 @@ import ConfirmModal2 from '../../../../components/modals/ConfirmModal2'
 import EditarTutoriaTutor from '../editarTutorias'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
 import LoadingIndicator from '../../../../components/LoadingIndicator'
+import SelectorTabStudent from '../../../../components/SelectorTabStudent'
 
 export default function HomeTutor() {
   const [refreshing, setRefreshing] = useState(false);
@@ -20,6 +21,7 @@ export default function HomeTutor() {
   const [selectedTutoriaId, setSelectedTutoriaId] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const { loadTutoring, loading, activos, finalizados } = useTutoriaStore();
+  const [selectedTab, setSelectedTab] = useState('Activos');
 
   useEffect(() => {
     loadTutoring();
@@ -29,6 +31,19 @@ export default function HomeTutor() {
     setRefreshing(true);
     loadTutoring().then(() => setRefreshing(false));
   }, [loadTutoring]);
+
+  const getSessionsByTab = () => {
+    switch (selectedTab) {
+      case 'Activos':
+        return activos;
+      case 'Historial':
+        return finalizados;
+      default:
+        return [];
+    }
+  };
+
+  const filteredTutorias = getSessionsByTab();
 
   const handleDelete = async () => {
     try {
@@ -79,19 +94,24 @@ export default function HomeTutor() {
         />
         <SizedBox height={10} />
         <ScrollView
-          className="w-full py-5"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          className="w-full"
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          {activos.length === 0 ? (
-            <View className="flex-1 w-full justify-center">
+          <SelectorTabStudent
+            tabs={['Activos', 'Historial']}
+            selectedTab={selectedTab}
+            onSelect={setSelectedTab}
+          />
+          {filteredTutorias.length === 0 ? (
+            <View className="flex-1 w-full justify-center mt-48">
+              <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
               <Text className="text-gray-500 text-center text-lg">
                 No tienes tutorías disponibles por el momento
               </Text>
             </View>
           ) : (
-            activos.map((activo) => (
+            filteredTutorias.map((activo) => (
               <TutoriasCard
                 key={activo.idHorario}
                 tutoriaInfo={activo}

@@ -49,7 +49,7 @@ const TutoriasStudent = () => {
     }
   };
 
-  const filteredSessions = getSessionsByTab();
+  const filteredTutorias = getSessionsByTab();
 
   const handleOnJoin = (session) => {
     setSelectedSession(session);
@@ -121,7 +121,6 @@ const TutoriasStudent = () => {
           <Text className="text-red-500">{error}</Text>
           <TouchableOpacity
             onPress={() => {
-              setError(null);
               loadTutoring();
             }}
             className="mt-4 bg-blue-500 px-4 py-2 rounded"
@@ -158,13 +157,13 @@ const TutoriasStudent = () => {
             selectedTab={selectedTab}
             onSelect={setSelectedTab}
           />
-          {filteredSessions.length === 0 ? (
+          {filteredTutorias.length === 0 ? (
             <View className="flex-1 w-full items-center mt-48">
               <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
               <Text className="text-gray-500">No hay tutorías {selectedTab.toLowerCase()}</Text>
             </View>
           ) : (
-            filteredSessions.map((session) => (
+            filteredTutorias.map((session) => (
               <ReservarTutoriaCard
                 key={session.idHorario}
                 data={session}

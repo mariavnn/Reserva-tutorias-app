@@ -4,9 +4,16 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { quitarSegundos, formatDate } from '../constants/Utils';
 
 export default function TutoriasCard({ tutoriaInfo, onDelete, onEdit }) {
+  const colorClass = 
+  tutoriaInfo.modo === "DISPONIBLE"
+  ? "bg-green-600"
+  : tutoriaInfo.modo === "EN_CURSO"
+  ? "bg-blue-600"
+  : "bg-red-500";
+
   return (
-    <View className="w-full flex-row border border-gray-200 rounded-xl bg-white shadow-sm mb-6 overflow-hidden">
-      <View className={`${tutoriaInfo.modo === "DISPONIBLE" ? ' bg-green-600' : 'bg-blue-600'} w-2`} />
+    <View className="w-full flex-row border border-gray-200 rounded-xl bg-white shadow-sm mt-3 overflow-hidden">
+      <View className={`${colorClass}  w-2`} />
 
       <View className="flex-1 p-4">
         <View className="flex-row justify-between items-center mb-2">

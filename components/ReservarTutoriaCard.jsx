@@ -58,14 +58,18 @@ export default function ReservarTutoriaCard({ data, onJoin, status }) {
         <Text className={`text-xs font-medium ${status === "Agendada" ? "text-blue-500" :
           status !== "Finalizada" ? "text-green-500" : "text-red-500"
           }`}>
-          {status} {data?.modo == "EN_CURSO" && (<Text>En curso</Text>)}
+          {data?.modo == "EN_CURSO" ? 
+          (
+            <Text className={"text-blue-500"}>En curso</Text>
+          ) : (
+            <Text>{status}</Text>
+          )}
         </Text>
-
         {status !== "Finalizada" && (
           <TouchableOpacity
             onPress={onJoin}
-            className={`px-4 py-1.5 rounded-xl ${status === "Agendada" ? "bg-red-500" : "bg-blue-500"
-              }`}
+            className={`px-4 py-1.5 rounded-xl ${status === "Agendada" ? "bg-red-500" : "bg-blue-500"} ${data?.modo=="EN_CURSO" && "bg-gray-500"}`}
+            disabled={data?.modo=="EN_CURSO"}
           >
             <Text className="text-white font-semibold text-sm">
               {status === "Agendada" ? "Cancelar" : "Reservar"}

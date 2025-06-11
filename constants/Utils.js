@@ -4,6 +4,8 @@ export const quitarSegundos = (horaCompleta) => {
 }
 
 export const formatDate = (dateString) => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // Esto NO usa zona horaria UTC
   const options = { weekday: 'short', day: 'numeric', month: 'short' };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
+  return date.toLocaleDateString('es-ES', options);
 };
