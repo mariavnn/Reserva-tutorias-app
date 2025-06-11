@@ -58,7 +58,7 @@ export default function ReservarTutoriaCard({ data, onJoin, status }) {
         <Text className={`text-xs font-medium ${status === "Agendada" ? "text-blue-500" :
           status !== "Finalizada" ? "text-green-500" : "text-red-500"
           }`}>
-          {status} {data?.modo == "FINALIZADO" && 'HOLA'}
+          {status} {data?.modo == "EN_CURSO" && (<Text>En curso</Text>)}
         </Text>
 
         {status !== "Finalizada" && (

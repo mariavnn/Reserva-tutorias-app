@@ -1,11 +1,10 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native'
 import React, { useCallback, useEffect } from 'react'
 import { Screen } from '../../../../components/Screen'
 import GeneralTitle from '../../../../components/GeneralTitle'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useState } from 'react';
 import SelectorTabStudent from '../../../../components/SelectorTabStudent';
-import { ScrollView } from 'react-native';
 import ReservarTutoriaCard from '../../../../components/ReservarTutoriaCard';
 import ConfirmReservaModal from '../../../../components/modals/ConfirmReservaModal';
 import ConfirmCancelModal from '../../../../components/modals/ConfirmCancelModal';
@@ -17,6 +16,7 @@ import LoadingIndicator from '../../../../components/LoadingIndicator';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const TutoriasStudent = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState('Disponibles');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalCancel, setModalCancel] = useState(false);
@@ -31,6 +31,10 @@ const TutoriasStudent = () => {
     loadTutoring();
   }, [loadTutoring]);
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadTutoring().then(() => setRefreshing(false));
+  }, [loadTutoring]);
 
   const getSessionsByTab = () => {
     switch (selectedTab) {
@@ -143,34 +147,33 @@ const TutoriasStudent = () => {
             <Text className="text-center text-blue-500">Tutores</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Buscador y tabs */}
-        <SelectorTabStudent
-          tabs={['Disponibles', 'Agendadas', 'Historial']}
-          selectedTab={selectedTab}
-          onSelect={setSelectedTab}
-        />
-
-        {/* Lista de tutorías */}
-        <View className="flex-1">
+        <ScrollView
+          className="w-full"
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          {/* Buscador y tabs */}
+          <SelectorTabStudent
+            tabs={['Disponibles', 'Agendadas', 'Historial']}
+            selectedTab={selectedTab}
+            onSelect={setSelectedTab}
+          />
           {filteredSessions.length === 0 ? (
-            <View className="flex-1 justify-center items-center">
+            <View className="flex-1 w-full items-center mt-48">
               <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
               <Text className="text-gray-500">No hay tutorías {selectedTab.toLowerCase()}</Text>
             </View>
           ) : (
-            <ScrollView>
-              {filteredSessions.map((session) => (
-                <ReservarTutoriaCard
-                  key={session.idHorario}
-                  data={session}
-                  onJoin={() => handleOnJoin(session)}
-                  status={selectedTab === 'Agendadas' ? 'Agendada' : selectedTab === 'Historial' ? 'Finalizada' : 'Disponible'}
-                />
-              ))}
-            </ScrollView>
+            filteredSessions.map((session) => (
+              <ReservarTutoriaCard
+                key={session.idHorario}
+                data={session}
+                onJoin={() => handleOnJoin(session)}
+                status={selectedTab === 'Agendadas' ? 'Agendada' : selectedTab === 'Historial' ? 'Finalizada' : 'Disponible'}
+              />
+            ))
           )}
-        </View>
+        </ScrollView>
       </View>
 
       {/* Modales */}

@@ -6,7 +6,7 @@ import { quitarSegundos, formatDate } from '../constants/Utils';
 export default function TutoriasCard({ tutoriaInfo, onDelete, onEdit }) {
   return (
     <View className="w-full flex-row border border-gray-200 rounded-xl bg-white shadow-sm mb-6 overflow-hidden">
-      <View className={`${tutoriaInfo.modo === "DISPONIBLE" ? ' bg-blue-600' : 'bg-green-600'} w-2`} />
+      <View className={`${tutoriaInfo.modo === "DISPONIBLE" ? ' bg-green-600' : 'bg-blue-600'} w-2`} />
 
       <View className="flex-1 p-4">
         <View className="flex-row justify-between items-center mb-2">

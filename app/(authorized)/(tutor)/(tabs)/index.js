@@ -43,7 +43,7 @@ export default function HomeTutor() {
   };
 
   const handleEdit = (tutoria) => {
-    setSelectedTutoriaId(tutoria.id);
+    setSelectedTutoriaId(tutoria.idHorario);
     setEditVisible(true);
   };
 

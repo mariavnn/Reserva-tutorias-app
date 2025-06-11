@@ -83,11 +83,11 @@ export default function HomeStudent() {
           <ScrollView>
             <View className='flex-row flex-wrap justify-between'>
               {
-                getRandom(disponibles).map((session) => {
+                getRandom(disponibles).map((tutoria) => {
                   return (
                     <PopularTutorias
-                      key={session.id}
-                      data={session}
+                      key={tutoria.idHorario}
+                      data={tutoria}
                     />
                   )
                 })
