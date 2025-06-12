@@ -2,47 +2,50 @@ import { create } from 'zustand';
 import { generalInfoService } from '../service/generalInfoService';
 import { scheduleService } from '../service/scheduleService';
 import { userInfoService } from '../service/infoUser';
-
-const filterSubjectsByUser = (allSubjects, userInfo) => {
-  const subjectIds = userInfo.subjectUsers.map(su => su.subjectId);
-  return allSubjects
-    .filter(subject => subjectIds.includes(subject.subjectId))
-    .map(subject => ({
-      label: subject.subjectName,
-      value: subject.subjectId
-    }));
-};
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useFormDataStore = create((set) => ({
   subjects: [],
   blocks: [],
   isLoading: false,
+  error: null,
 
   loadInitialData: async () => {
     try {
       set({ isLoading: true });
 
-      const userInfo = await userInfoService.getUserInfo();
+      const userId = await AsyncStorage.getItem('UserId');
 
       const [subjectsData, blocksData] = await Promise.all([
-        generalInfoService.getInfo('materias'),
+        generalInfoService.getInfoById('materiasUsuario', userId),
         generalInfoService.getInfo('bloques')
       ]);
 
+      if (!Array.isArray(subjectsData) || !Array.isArray(blocksData)) {
+        throw new Error('Invalid data format from server');
+      }
+
       set({
-        subjects: filterSubjectsByUser(subjectsData, userInfo),
-        blocks: blocksData.map(block => ({
-          label: `${block.blockName} (${block.section})`,
-          value: block.blockId.toString(),
-          data: block
-        })),
+        subjects: subjectsData,
+        blocks: blocksData,
         isLoading: false
       });
+
     } catch (error) {
       console.error('Error loading initial data:', error);
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: error.message || 'Failed to load initial data'
+      });
     }
-  }
+  },
+
+  reset: () => set({ 
+    subjects: [], 
+    blocks: [], 
+    isLoading: false, 
+    error: null 
+  })
 }));
 
 // Para el segundo caso con tutoriaDetails
@@ -56,8 +59,6 @@ export const useTutoriaFormStore = create((set) => ({
     try {
       set({ loading: true });
 
-      const userInfo = await userInfoService.getUserInfo();
-
       const [subjectsData, blocksData, tutoriaDetails] = await Promise.all([
         generalInfoService.getInfo('materias'),
         generalInfoService.getInfo('bloques'),
@@ -65,7 +66,7 @@ export const useTutoriaFormStore = create((set) => ({
       ]);
 
       set({
-        subjects: filterSubjectsByUser(subjectsData, userInfo),
+        subjects: subjectsData,
         blocks: blocksData.map(block => ({
           label: `${block.blockName} (${block.section})`,
           value: block.blockId.toString(),
