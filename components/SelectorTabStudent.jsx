@@ -14,7 +14,7 @@ export default function SelectorTabStudent( { tabs = [], selectedTab, onSelect }
               isSelected ? "bg-[#bfdcff]" : ""
             }`}
           >
-            <Text className={`text-sm font-medium ${isSelected ? "text-black" : "text-gray-600"}`}>
+            <Text className={`text-sm font-medium ${isSelected ? "text-black" : "text-gray-400"}`}>
               {tab}
             </Text>
           </TouchableOpacity>

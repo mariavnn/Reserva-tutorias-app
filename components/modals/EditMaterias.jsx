@@ -53,64 +53,64 @@ export default function EditMaterias({ visible, onClose }) {
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent>
-  <View className="flex-1 justify-center items-center bg-black/40 px-4">
-    <View className="bg-white p-6 rounded-lg w-full max-h-[80%] min-h-[60%]">
-      <Text className="text-lg font-bold mb-4 text-center">
-        Editar Asignatura
-      </Text>
+        <View className="flex-1 justify-center items-center bg-black/40 px-4">
+          <View className="bg-white p-6 rounded-lg w-full max-h-[80%] min-h-[60%]">
+            <Text className="text-lg font-bold mb-4 text-center">
+              Editar Asignatura
+            </Text>
 
-      <Formik
-        initialValues={{ subjects: userInfo.subjectUsers || [] }}
-        validationSchema={SubjectsSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ handleSubmit, values, setFieldValue }) => (
-          <View className="h-full">
-            <View className="h-28">
-              <ScrollView
-                contentContainerStyle={{ paddingBottom: 8 }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {loading ? (
-                  <LoadingIndicator />
-                ) : allSubjects.length === 0 ? (
-                  <Text className="text-center text-gray-500 mt-4">
-                    No hay materias disponibles
-                  </Text>
-                ) : (
-                  allSubjects.map((subject) => (
-                    <SelectableCard
-                      key={subject.idMateria || subject}
-                      label={subject.nombreMateria || subject}
-                      subject={subject}
-                      value={values.subjects}
-                      onChange={(newSubjects) =>
-                        setFieldValue("subjects", newSubjects)
-                      }
-                    />
-                  ))
-                )}
-              </ScrollView>
-            </View>
+            <Formik
+              initialValues={{ subjects: userInfo.subjectUsers || [] }}
+              validationSchema={SubjectsSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ handleSubmit, values, setFieldValue }) => (
+                <View className="h-full">
+                  <View className="h-28">
+                    <ScrollView
+                      contentContainerStyle={{ paddingBottom: 8 }}
+                      keyboardShouldPersistTaps="handled"
+                    >
+                      {loading ? (
+                        <LoadingIndicator />
+                      ) : allSubjects.length === 0 ? (
+                        <Text className="text-center text-gray-500 mt-4">
+                          No hay materias disponibles
+                        </Text>
+                      ) : (
+                        allSubjects.map((subject) => (
+                          <SelectableCard
+                            key={subject.idMateria || subject}
+                            label={subject.nombreMateria || subject}
+                            subject={subject}
+                            value={values.subjects}
+                            onChange={(newSubjects) =>
+                              setFieldValue("subjects", newSubjects)
+                            }
+                          />
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
 
-            <View className="mt-4 flex-row justify-between">
-              <View className="w-2/5">
-                <GeneralButton
-                  title="Cancelar"
-                  type="secondary"
-                  onPress={onClose}
-                />
-              </View>
-              <View className="w-2/5">
-                <GeneralButton title="Guardar" onPress={handleSubmit} />
-              </View>
-            </View>
+                  <View className="mt-4 flex-row justify-between">
+                    <View className="w-2/5">
+                      <GeneralButton
+                        title="Cancelar"
+                        type="secondary"
+                        onPress={onClose}
+                      />
+                    </View>
+                    <View className="w-2/5">
+                      <GeneralButton title="Guardar" onPress={handleSubmit} />
+                    </View>
+                  </View>
+                </View>
+              )}
+            </Formik>
           </View>
-        )}
-      </Formik>
-    </View>
-  </View>
-</Modal>
+        </View>
+      </Modal>
 
       <SuccessModal
         visible={successVisible}
