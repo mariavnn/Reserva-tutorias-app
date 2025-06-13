@@ -87,7 +87,6 @@ export default function CrearTutoriasTutor() {
       setLoading(true);
       const tutoriaData = await formLogic.buildTutoriaData(formValues);
       await scheduleService.saveSchedule(tutoriaData);
-      setModalSuccessVisible(true);
     } catch (error) {
       console.error('Error al crear tutoría:', error);
       setModalVisible(false);
@@ -106,7 +105,6 @@ export default function CrearTutoriasTutor() {
     formikRef.current?.resetForm();
     formLogic.resetData();
     router.back();
-    setModalSuccessVisible(false);
     setModalVisible(false)
   };
 
@@ -290,7 +288,7 @@ export default function CrearTutoriasTutor() {
             )}
           </Formik>
 
-          <CreateTutoriaModal 
+          <CreateTutoriaModal
             visible={modalVisible}
             onCancel={closeModal}
             onClose={handleSuccessClose}

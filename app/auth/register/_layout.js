@@ -1,5 +1,3 @@
-// app/auth/register/_layout.js
-
 import React, { useContext } from 'react';
 import { View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Stack, usePathname, useRouter } from 'expo-router';
@@ -58,7 +56,7 @@ export default function RegisterLayout() {
             disabled={true}
           />
 
-          <View className="flex-1 w-full mt-10">
+          <View className="flex-1 w-full">
             <Stack
               screenOptions={{
                 headerShown: false,
