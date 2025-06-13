@@ -7,7 +7,7 @@ import InputField from '../../../../components/InputField'
 import InputDate from '../../../../components/InputDate'
 import InputHour from '../../../../components/InputHour'
 import GeneralButton from '../../../../components/GeneralButton'
-import DropdownInput from '../../../../components/DropdownInput'
+import NewDropdown from '../../../../components/NewDropdown'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
 import { Formik } from 'formik';
@@ -33,6 +33,8 @@ export default function CrearTutoriasTutor() {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formValues, setFormValues] = useState(null);
+  const [modalidadSeleccionada, setModalidadSeleccionada] = useState(null);
+
 
   const formikRef = useRef();
 
@@ -125,47 +127,46 @@ export default function CrearTutoriasTutor() {
             Completa los detalles para crear una nueva sesión de tutorías
           </Text>
 
-          <SizedBox height={24} />
-
           <Formik
             innerRef={formikRef}
             initialValues={formLogic.getInitialValues()}
-            validationSchema={formLogic.getValidationSchema()}
+            validationSchema={formLogic.getValidationSchema(modalidadSeleccionada)}
             enableReinitialize={true}
             onSubmit={handleSubmit}
           >
             {({ handleSubmit, setFieldValue, values, errors, touched }) => (
               <View className="w-full h-[79%]">
                 <ScrollView
-                  className="mb-4"
+                  className=""
                   contentContainerStyle={{ paddingBottom: 10, flexGrow: 1 }}
                   showsVerticalScrollIndicator={false}
                 >
                   {/* Modalidad */}
-                  <DropdownInput
+                  <NewDropdown
                     label="Modalidad"
+                    value={values.modalidad}
+                    onValueChange={(value) => {
+                      setModalidadSeleccionada(value);
+                      formLogic.handleModalityChange({ value }, setFieldValue, values);
+                      setFieldValue('modalidad', value);
+                    }}
+                    options={MODALITY_OPTIONS}
                     labelIcon={<FontAwesome6 name="laptop" size={16} color="black" />}
-                    items={MODALITY_OPTIONS}
-                    selectedValue={values.modalidad}
-                    onValueChange={(item) => formLogic.handleModalityChange(item, setFieldValue, values)}
-                    error={errors.modalidad}
-                    touched={touched.modalidad}
+                    error={errors.modalidad && touched.modalidad ? errors.modalidad : null}
+                    placeholder="Selecciona una modalidad"
                   />
-                  <SizedBox height={10} />
 
                   {/* Materia */}
-                  <DropdownInput
+                  <NewDropdown
                     label="Materia"
+                    value={values.materia}
+                    onValueChange={(value) => setFieldValue('materia', value)}
+                    options={subjectOptions}
                     labelIcon={<Feather name="book" size={16} color="black" />}
-                    items={subjectOptions}
-                    selectedValue={values.materia}
-                    onValueChange={(item) => setFieldValue('materia', item.label)}
-                    error={errors.materia}
-                    touched={touched.materia}
-                    disabled={isLoading}
+                    error={errors.materia && touched.materia ? errors.materia : null}
                     placeholder={isLoading ? "Cargando materias..." : "Selecciona una materia"}
+                    disabled={isLoading}
                   />
-                  <SizedBox height={10} />
 
                   {/* Descripción */}
                   <InputField
@@ -179,7 +180,6 @@ export default function CrearTutoriasTutor() {
                     multiline={true}
                     numberOfLines={3}
                   />
-                  <SizedBox height={10} />
 
                   {/* Fecha */}
                   <InputDate
@@ -192,64 +192,76 @@ export default function CrearTutoriasTutor() {
                     touched={touched.fecha}
                     labelIcon={<FontAwesome6 name="calendar" size={16} color="black" />}
                   />
-                  <SizedBox height={10} />
 
                   {/* Campos Presencial */}
-                  {!formLogic.isVirtual && formLogic.formState.modalidad === "PRESENCIAL" && (
+                  {values.modalidad === "PRESENCIAL" && (
                     <>
-                      <DropdownInput
+                      <NewDropdown
                         label="Bloque"
+                        value={values.bloque}
+                        onValueChange={(value) => {
+                          const selectedBlock = blockOptions.find(block => block.value === value);
+                          formLogic.handleBlockChange(selectedBlock, setFieldValue);
+                          setFieldValue('bloque', value);
+                        }}
+                        options={blockOptions}
                         labelIcon={<Entypo name="location-pin" size={18} color="black" />}
-                        items={blockOptions}
-                        selectedValue={values.bloque}
-                        onValueChange={(item) => formLogic.handleBlockChange(item, setFieldValue)}
-                        error={errors.bloque}
-                        touched={touched.bloque}
-                        disabled={isLoading}
+                        error={errors.bloque && touched.bloque ? errors.bloque : null}
                         placeholder={isLoading ? "Cargando bloques..." : "Selecciona un bloque"}
+                        disabled={isLoading}
                       />
-                      <SizedBox height={10} />
 
-                      <DropdownInput
+                      <NewDropdown
                         label="Salón"
+                        value={values.salon}
+                        onValueChange={(value) => {
+                          const selectedClassroom = formLogic.formState.availableClassrooms.find(classroom => classroom.value === value);
+                          formLogic.handleClassroomChange(selectedClassroom, setFieldValue);
+                          setFieldValue('salon', value);
+                        }}
+                        options={formLogic.formState.availableClassrooms}
                         labelIcon={<Entypo name="home" size={18} color="black" />}
-                        items={formLogic.formState.availableClassrooms}
-                        selectedValue={values.salon}
-                        onValueChange={(item) => formLogic.handleClassroomChange(item, setFieldValue)}
-                        error={errors.salon}
-                        touched={touched.salon}
-                        disabled={!formLogic.formState.selectedBlock || formLogic.formState.availableClassrooms.length === 0}
-                        placeholder={!formLogic.formState.selectedBlock ? "Selecciona un bloque primero" : "Selecciona un salón"}
+                        error={errors.salon && touched.salon ? errors.salon : null}
+                        disabled={!values.bloque || formLogic.formState.availableClassrooms.length === 0}
+                        placeholder={
+                          !values.bloque
+                            ? "Selecciona un bloque primero"
+                            : formLogic.formState.availableClassrooms.length === 0
+                              ? "No hay salones disponibles"
+                              : "Selecciona un salón"
+                        }
                       />
-                      <SizedBox height={10} />
 
-                      <DropdownInput
+                      <NewDropdown
                         label="Horario disponible"
+                        value={values.disponibilidad}
+                        onValueChange={(value) => setFieldValue('disponibilidad', value)}
+                        options={formLogic.formState.availableTimeSlots}
                         labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
-                        items={formLogic.formState.availableTimeSlots}
-                        selectedValue={values.disponibilidad}
-                        onValueChange={(item) => setFieldValue('disponibilidad', item.value)}
-                        error={errors.disponibilidad}
-                        touched={touched.disponibilidad}
+                        error={errors.disponibilidad && touched.disponibilidad ? errors.disponibilidad : null}
                         disabled={
                           formLogic.formState.loadingAvailability ||
                           formLogic.formState.availableTimeSlots.length === 0 ||
-                          !formLogic.formState.selectedDate ||
-                          !formLogic.formState.selectedClassroom
+                          !values.fecha ||
+                          !values.salon
                         }
                         placeholder={
-                          formLogic.formState.loadingAvailability ? "Cargando horarios..." :
-                            !formLogic.formState.selectedDate ? "Selecciona una fecha primero" :
-                              !formLogic.formState.selectedClassroom ? "Selecciona un salón primero" :
-                                formLogic.formState.availableTimeSlots.length === 0 ? "No hay horarios disponibles para esta fecha" :
-                                  "Selecciona un horario"
+                          formLogic.formState.loadingAvailability
+                            ? "Cargando horarios..."
+                            : !values.fecha
+                              ? "Selecciona una fecha primero"
+                              : !values.salon
+                                ? "Selecciona un salón primero"
+                                : formLogic.formState.availableTimeSlots.length === 0
+                                  ? "No hay horarios disponibles"
+                                  : "Selecciona un horario"
                         }
                       />
                     </>
                   )}
 
                   {/* Campos Virtual */}
-                  {formLogic.isVirtual && (
+                  {values.modalidad === "VIRTUAL" && (
                     <>
                       <InputHour
                         label="Hora de inicio"
@@ -260,8 +272,6 @@ export default function CrearTutoriasTutor() {
                         touched={touched.horaInicio}
                         labelIcon={<FontAwesome5 name="clock" size={16} color="black" />}
                       />
-                      <SizedBox height={10} />
-
                       <InputHour
                         label="Hora de fin"
                         placeholder="HH:MM (ej: 11:00)"

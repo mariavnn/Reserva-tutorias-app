@@ -13,22 +13,14 @@ const NewDropdown = ({
   disabled = false,
 }) => {
   return (
-    <View style={styles.container}>
+    <View className="w-full py-2">
       {label &&
         <View className="flex-row gap-1 items-center mb-1">
           {labelIcon && <View>{labelIcon}</View>}
           <Text className="text-gray-700 mr-1">{label}</Text>
         </View>
       }
-
       <Dropdown
-        style={[
-          styles.dropdown,
-          error ? styles.dropdownError : null,
-          disabled ? styles.dropdownDisabled : null,
-        ]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
         data={options}
         labelField="label"
         valueField="value"
@@ -36,9 +28,47 @@ const NewDropdown = ({
         value={value}
         onChange={item => item?.value !== undefined && onValueChange(item.value)}
         disable={disabled}
+        placeholderStyle={{
+          color: '#9CA3AF',
+          fontSize: 16,
+        }}
+        selectedTextStyle={{
+          color: '#111827',
+          fontWeight: '500',
+          fontSize: 16,
+        }}
+        containerStyle={{
+          borderRadius: 8,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5,
+        }}
+        style={{
+          borderWidth: 1,
+          backgroundColor: 'white',
+          borderColor: error ? '#EF4444' : '#3B82F6',
+
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 12,
+          minHeight: 48,
+        }}
+        itemTextStyle={{
+          fontSize: 13,
+          color: '#111827',
+        }}
+        activeColor="#d4e5ff"
       />
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error &&
+        <Text className="text-red-500 text-sm mt-1 ml-1">
+          {error}
+        </Text>}
     </View>
   );
 };

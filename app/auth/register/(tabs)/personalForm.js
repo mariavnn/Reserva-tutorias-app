@@ -5,7 +5,6 @@ import SizedBox from '../../../../components/SizedBox'
 import * as yup from 'yup';
 import { Formik } from 'formik';
 import GeneralButton from '../../../../components/GeneralButton';
-import DropdownInput from '../../../../components/DropdownInput';
 import useRegisterStore from '../../../../store/useRegisterStore';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '../../../../store/useUserStore';

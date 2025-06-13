@@ -33,7 +33,6 @@ const virtualSchema = yup.object().shape({
 
 const useFormLogic = (subjects, blocks) => {
   const [formState, setFormState] = useState({
-    modalidad: null,
     selectedBlock: null,
     selectedClassroom: null,
     selectedDate: null,
@@ -42,20 +41,21 @@ const useFormLogic = (subjects, blocks) => {
     loadingAvailability: false
   });
 
-  const isVirtual = formState.modalidad === 'VIRTUAL';
+  const getIsVirtual = (currentModality) => currentModality === 'VIRTUAL';
 
-  const getInitialValues = () => ({
+  const getInitialValues = (modalidad = '') => ({
     materia: '',
-    modalidad: '',
+    modalidad: modalidad,
     descripcion: '',
     fecha: '',
-    ...(isVirtual
+    ...(modalidad === 'VIRTUAL'
       ? { horaInicio: '', horaFin: '' }
       : { bloque: '', salon: '', disponibilidad: '' }
     )
   });
 
-  const getValidationSchema = () => isVirtual ? virtualSchema : presencialSchema;
+  const getValidationSchema = (modalidad) =>
+    getIsVirtual(modalidad) ? virtualSchema : presencialSchema;
 
   const updateFormState = (updates) => {
     setFormState(prev => ({ ...prev, ...updates }));
@@ -63,40 +63,30 @@ const useFormLogic = (subjects, blocks) => {
 
   const handleModalityChange = (item, setFieldValue, values) => {
     const newModality = item.value;
-    if (values.modalidad === newModality) return;
-
     setFieldValue('modalidad', newModality);
 
-    const initialValues = {
-      materia: '',
-      descripcion: '',
-      fecha: '',
-      horaInicio: '',
-      horaFin: '',
-      bloque: '',
-      salon: '',
-      disponibilidad: ''
-    };
-
-    Object.keys(initialValues).forEach(key => {
-      setFieldValue(key, initialValues[key]);
-    });
+    // Limpiar campos según nueva modalidad
+    if (newModality === 'VIRTUAL') {
+      setFieldValue('bloque', '');
+      setFieldValue('salon', '');
+      setFieldValue('disponibilidad', '');
+    } else {
+      setFieldValue('horaInicio', '');
+      setFieldValue('horaFin', '');
+    }
 
     updateFormState({
-      modalidad: newModality,
       selectedBlock: null,
       selectedClassroom: null,
-      selectedDate: null,
       availableClassrooms: [],
-      availableTimeSlots: [],
-      loadingAvailability: false
+      availableTimeSlots: []
     });
   };
 
   const handleBlockChange = (item, setFieldValue) => {
     const blockData = blocks.find(block => block.blockId === item.value);
 
-    setFieldValue('bloque', item.label);
+    setFieldValue('bloque', item.value);
     setFieldValue('salon', '');
     setFieldValue('disponibilidad', '');
 
@@ -126,11 +116,13 @@ const useFormLogic = (subjects, blocks) => {
   };
 
   const handleClassroomChange = (item, setFieldValue) => {
-    setFieldValue('salon', item.label);
+    setFieldValue('salon', item.value);
     setFieldValue('disponibilidad', '');
 
+    const selectedClassroom = formState.availableClassrooms.find(classroom => classroom.value === item.value);
+
     updateFormState({
-      selectedClassroom: item,
+      selectedClassroom: selectedClassroom,
       availableTimeSlots: []
     });
 
@@ -148,7 +140,7 @@ const useFormLogic = (subjects, blocks) => {
       availableTimeSlots: []
     });
 
-    if (!isVirtual && formState.selectedClassroom) {
+    if (!getIsVirtual && formState.selectedClassroom) {
       loadAvailabilityForClassroom(formState.selectedClassroom.value, date);
     }
   };
@@ -188,7 +180,7 @@ const useFormLogic = (subjects, blocks) => {
 
   const buildTutoriaData = async (values) => {
     const userId = await AsyncStorage.getItem('UserId');
-    const subjectId = subjects.find(s => s.label === values.materia)?.value;
+    const subjectId = values.materia;
 
     const baseData = {
       subjectId,
@@ -198,7 +190,7 @@ const useFormLogic = (subjects, blocks) => {
       scheduleDate: formatDate(values.fecha, 'submit'),
     };
 
-    if (isVirtual) {
+    if (values.modalidad === "VIRTUAL") {
       return {
         ...baseData,
         startTime: values.horaInicio + ':00',
@@ -233,7 +225,7 @@ const useFormLogic = (subjects, blocks) => {
 
   return {
     formState,
-    isVirtual,
+    getIsVirtual,
     getInitialValues,
     getValidationSchema,
     handleModalityChange,

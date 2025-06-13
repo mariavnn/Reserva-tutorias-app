@@ -1,6 +1,5 @@
 import { View, Text } from "react-native";
 import React, { useEffect } from "react";
-import DropdownInput from "../../../../components/DropdownInput";
 import { Formik } from "formik";
 import * as yup from "yup";
 import SizedBox from "../../../../components/SizedBox";
