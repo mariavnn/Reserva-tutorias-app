@@ -6,7 +6,7 @@ import useCreateTutoriaStore from '../../store/useCreateTutoriaStore';
 import GeneralButton from '../GeneralButton';
 
 export default function CreateTutoriaModal({ visible, onCancel, onClose, onConfirm }) {
-  const { tutoriaData } = useCreateTutoriaStore ();
+  const { tutoriaData } = useCreateTutoriaStore();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

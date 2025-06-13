@@ -62,8 +62,13 @@ export default function CrearTutoriasTutor() {
   const handleSubmit = (values) => {
     setFormValues(values);
 
+    const selectedMateria = subjectOptions.find(opt => opt.value === values.materia);
+    const selectedBloque = blockOptions.find(opt => opt.value === values.bloque);
+    const selectedSalon = formLogic.formState.availableClassrooms.find(opt => opt.value === values.salon);
+    const selectedDisponibilidad = formLogic.formState.availableTimeSlots.find(opt => opt.value === values.disponibilidad);
+
     const modalData = {
-      materia: values.materia,
+      materia: selectedMateria?.label || values.materia,
       descripcion: values.descripcion,
       fecha: values.fecha,
       modalidad: values.modalidad,
@@ -73,9 +78,9 @@ export default function CrearTutoriasTutor() {
           horaFin: values.horaFin
         }
         : {
-          bloque: values.bloque,
-          salon: values.salon,
-          disponibilidad: values.disponibilidad
+          bloque: selectedBloque?.label || values.bloque,
+          salon: selectedSalon?.label || values.salon,
+          disponibilidad: selectedDisponibilidad?.label || values.disponibilidad
         }
       )
     };
