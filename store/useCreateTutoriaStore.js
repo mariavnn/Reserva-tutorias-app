@@ -4,8 +4,6 @@ const useCreateTutoriaStore = create((set) => ({
   tutoriaData: {},
  
   setTutoriaData: (data) => set({ tutoriaData: data }),
-  
-  
 }));
 
 export default useCreateTutoriaStore;

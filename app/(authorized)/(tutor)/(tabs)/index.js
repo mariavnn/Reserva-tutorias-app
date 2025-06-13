@@ -88,23 +88,23 @@ export default function HomeTutor() {
 
   return (
     <Screen>
-      <View className="w-full">
+      <View className="w-full flex-1">
         <GeneralTitle
           label="Mis Tutorías"
           type='primary'
           className='!text-blue-500 mt-4'
         />
-        <SizedBox height={10} />
+        <SelectorTabStudent
+          tabs={['Activos', 'Historial']}
+          selectedTab={selectedTab}
+          onSelect={setSelectedTab}
+        />
+        <SizedBox height={5} />
         <ScrollView
           className="w-full"
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <SelectorTabStudent
-            tabs={['Activos', 'Historial']}
-            selectedTab={selectedTab}
-            onSelect={setSelectedTab}
-          />
           {filteredTutorias.length === 0 ? (
             <View className="flex-1 w-full items-center mt-48">
               <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
@@ -127,26 +127,27 @@ export default function HomeTutor() {
           )}
         </ScrollView>
 
-        <SuccessModal
-          visible={successVisible}
-          onClose={() => setSuccessVisible(false)}
-          message={successMessage}
-        />
-
-        <ConfirmModal2
-          visible={confirmVisible}
-          onClose={() => setConfirmVisible(false)}
-          onConfirm={handleDelete}
-          message="¿Estás seguro que deseas eliminar esta tutoría?"
-        />
-
-        <EditarTutoriaTutor
-          visible={editVisible}
-          onClose={handleCloseEdit}
-          tutoriaId={selectedTutoriaId}
-          onSuccess={handleEditSuccess}
-        />
       </View>
+
+      <SuccessModal
+        visible={successVisible}
+        onClose={() => setSuccessVisible(false)}
+        message={successMessage}
+      />
+
+      <ConfirmModal2
+        visible={confirmVisible}
+        onClose={() => setConfirmVisible(false)}
+        onConfirm={handleDelete}
+        message="¿Estás seguro que deseas eliminar esta tutoría?"
+      />
+
+      <EditarTutoriaTutor
+        visible={editVisible}
+        onClose={handleCloseEdit}
+        tutoriaId={selectedTutoriaId}
+        onSuccess={handleEditSuccess}
+      />
     </Screen>
   );
 }
