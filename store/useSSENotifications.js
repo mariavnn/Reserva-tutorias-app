@@ -1,4 +1,4 @@
-import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppState } from 'react-native';
 import EventSource from 'react-native-sse';
