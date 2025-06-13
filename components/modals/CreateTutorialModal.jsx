@@ -5,8 +5,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import useCreateTutoriaStore from '../../store/useCreateTutoriaStore';
 import GeneralButton from '../GeneralButton';
 
-export default function CreateTutoriaModal({ visible, onClose, onConfirm }) {
-  const { tutoriaData } = useCreateTutoriaStore();
+export default function CreateTutoriaModal({ visible, onCancel, onClose, onConfirm }) {
+  const { tutoriaData } = useCreateTutoriaStore ();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,14 +18,14 @@ export default function CreateTutoriaModal({ visible, onClose, onConfirm }) {
     } catch (error) {
       console.error('Error al confirmar:', error);
       setIsConfirmed(false);
-      onClose(); // Cierra el modal si hay error
+      onCancel(); // Cierra el modal si hay error
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    setIsConfirmed(false); // Resetear estado al cerrar
+    setIsConfirmed(false);
     onClose();
   };
 
@@ -84,16 +84,16 @@ export default function CreateTutoriaModal({ visible, onClose, onConfirm }) {
                 </View>
               </View>
 
-              <View className="flex-row justify-between space-x-3">
-                <View className="flex-1">
+              <View className="flex-row justify-center gap-3">
+                <View className="flex-auto">
                   <GeneralButton
                     title="Cancelar"
                     type="secondary"
-                    onPress={handleClose}
+                    onPress={() => onCancel()}
                     disabled={isLoading}
                   />
                 </View>
-                <View className="flex-1">
+                <View className="flex-auto">
                   <GeneralButton
                     title={isLoading ? "Enviando..." : "Confirmar"}
                     type="primary"

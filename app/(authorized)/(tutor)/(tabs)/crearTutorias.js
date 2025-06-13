@@ -11,266 +11,30 @@ import DropdownInput from '../../../../components/DropdownInput'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
 import { Formik } from 'formik';
-import * as yup from 'yup';
 import useCreateTutoriaStore from '../../../../store/useCreateTutoriaStore'
-import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModal'
-import { useRouter } from 'expo-router'
+import { router } from 'expo-router'
 import { scheduleService } from '../../../../service/scheduleService'
-import { availabilityService } from '../../../../service/availabilityService'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFormDataStore } from '../../../../store/useFormTutoriaStore'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 import Feather from '@expo/vector-icons/Feather'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
-
+import useFormLogic from '../../../../store/useFormLogic'
+import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModal'
 
 const MODALITY_OPTIONS = [
   { label: 'Presencial', value: 'PRESENCIAL' },
   { label: 'Virtual', value: 'VIRTUAL' },
 ];
 
-const baseSchema = {
-  materia: yup.string().required("El campo materia es requerido"),
-  modalidad: yup.string().required("La modalidad es requerida"),
-  descripcion: yup.string().required("La descripción es requerida"),
-  fecha: yup.string().required("La fecha es requerida"),
-};
-
-const presencialSchema = yup.object().shape({
-  ...baseSchema,
-  bloque: yup.string().required("El bloque es requerido"),
-  salon: yup.string().required("El salón es requerido"),
-  disponibilidad: yup.string().required("La disponibilidad es requerida"),
-});
-
-const virtualSchema = yup.object().shape({
-  ...baseSchema,
-  horaInicio: yup.string().required("La hora de inicio es requerida"),
-  horaFin: yup
-    .string()
-    .required("La hora de fin es requerida")
-    .test('is-greater', 'La hora de fin debe ser posterior a la de inicio',
-      function (value) {
-        const { horaInicio } = this.parent;
-        return !horaInicio || !value || horaInicio < value;
-      }
-    ),
-});
-
-const useFormLogic = (subjects, blocks) => {
-  const [formState, setFormState] = useState({
-    modalidad: null,
-    selectedBlock: null,
-    selectedClassroom: null,
-    selectedDate: null,
-    availableClassrooms: [],
-    availableTimeSlots: [],
-    loadingAvailability: false
-  });
-
-  const isVirtual = formState.modalidad === 'VIRTUAL';
-
-  const getInitialValues = () => ({
-    materia: '',
-    modalidad: '',
-    descripcion: '',
-    fecha: '',
-    ...(isVirtual
-      ? { horaInicio: '', horaFin: '' }
-      : { bloque: '', salon: '', disponibilidad: '' }
-    )
-  });
-
-  const getValidationSchema = () => isVirtual ? virtualSchema : presencialSchema;
-
-  const updateFormState = (updates) => {
-    setFormState(prev => ({ ...prev, ...updates }));
-  };
-
-  const handleModalityChange = (item, setFieldValue, values) => {
-    const newModality = item.value;
-
-    const commonValues = {
-      materia: values.materia,
-      descripcion: values.descripcion,
-      fecha: values.fecha,
-      modalidad: newModality
-    };
-
-    const initialValues = {
-      materia: commonValues.materia,
-      modalidad: commonValues.modalidad,
-      descripcion: commonValues.descripcion,
-      fecha: commonValues.fecha,
-      horaInicio: '',
-      horaFin: '',
-      bloque: '',
-      salon: '',
-      disponibilidad: ''
-    };
-
-    Object.keys(initialValues).forEach(key => {
-      setFieldValue(key, initialValues[key]);
-    });
-
-    updateFormState({
-      modalidad: newModality,
-      selectedBlock: null,
-      selectedClassroom: null,
-      selectedDate: commonValues.fecha || null,
-      availableClassrooms: [],
-      availableTimeSlots: [],
-      loadingAvailability: false
-    });
-  };
-
-  const handleBlockChange = (item, setFieldValue) => {
-    const blockData = blocks.find(block => block.blockId === item.value);
-
-    setFieldValue('bloque', item.label);
-    setFieldValue('salon', '');
-    setFieldValue('disponibilidad', '');
-
-    const classrooms = blockData.classrooms.map(classroom => ({
-      label: `${classroom.location}${classroom.description ? ` - ${classroom.description}` : ''}`,
-      value: classroom.classroomId,
-      data: classroom
-    }));
-
-    updateFormState({
-      selectedBlock: blockData,
-      selectedClassroom: null,
-      availableClassrooms: classrooms,
-      availableTimeSlots: []
-    });
-  };
-
-  const formatDate = (dateString, tipo) => {
-    const [day, month, year] = dateString.split('-');
-
-    const formattedDay = day.padStart(2, '0');
-    const formattedMonth = month.padStart(2, '0');
-    if (tipo === 'submit')
-      return `${year}-${formattedMonth}-${formattedDay}`;
-
-    return `${formattedDay}-${formattedMonth}-${year}`;
-  };
-
-  const handleClassroomChange = (item, setFieldValue) => {
-    setFieldValue('salon', item.label);
-    setFieldValue('disponibilidad', '');
-
-    updateFormState({
-      selectedClassroom: item,
-      availableTimeSlots: []
-    });
-
-    if (formState.selectedDate) {
-      loadAvailabilityForClassroom(item.value, formState.selectedDate);
-    }
-  };
-
-  const handleDateChange = (date, setFieldValue) => {
-    setFieldValue('fecha', date);
-    setFieldValue('disponibilidad', '');
-
-    updateFormState({
-      selectedDate: date,
-      availableTimeSlots: []
-    });
-
-    if (!isVirtual && formState.selectedClassroom) {
-      loadAvailabilityForClassroom(formState.selectedClassroom.value, date);
-    }
-  };
-
-  const loadAvailabilityForClassroom = async (classroomId, date) => {
-    try {
-      updateFormState({ loadingAvailability: true });
-      const formattedDate = formatDate(date);
-
-      const availabilityData = await availabilityService.getAvailabilityFilter(classroomId, formattedDate);
-      console.log(availabilityData)
-      if (Array.isArray(availabilityData)) {
-        const timeSlots = availabilityData.map(availability => ({
-          label: `${availability.horaInicio.slice(0, 5)} - ${availability.horaFin.slice(0, 5)} (${availability.diaSemana})`,
-          value: availability.idDisponibilidad.toString(),
-          data: availability
-        }));
-
-        updateFormState({
-          availableTimeSlots: timeSlots,
-          loadingAvailability: false
-        });
-      } else {
-        updateFormState({
-          availableTimeSlots: [],
-          loadingAvailability: false
-        });
-      }
-    } catch (error) {
-      console.error('Error loading availability:', error);
-      updateFormState({
-        availableTimeSlots: [],
-        loadingAvailability: false
-      });
-    }
-  };
-
-  const buildTutoriaData = async (values) => {
-    const userId = await AsyncStorage.getItem('UserId');
-    const subjectId = subjects.find(s => s.label === values.materia)?.value;
-
-    const baseData = {
-      subjectId,
-      userId,
-      description: values.descripcion,
-      type: values.modalidad,
-      scheduleDate: formatDate(values.fecha, 'submit'),
-    };
-
-    if (isVirtual) {
-      return {
-        ...baseData,
-        startTime: values.horaInicio + ':00',
-        endTime: values.horaFin + ':00',
-      };
-    } else {
-      const selectedTimeSlot = formState.availableTimeSlots
-        .find(slot => slot.value === values.disponibilidad);
-
-      if (!selectedTimeSlot) {
-        throw new Error('Horario disponible no encontrado');
-      }
-
-      return {
-        ...baseData,
-        availabilityId: parseInt(selectedTimeSlot.value),
-      };
-    }
-  };
-
-  return {
-    formState,
-    isVirtual,
-    getInitialValues,
-    getValidationSchema,
-    handleModalityChange,
-    handleBlockChange,
-    handleClassroomChange,
-    handleDateChange,
-    buildTutoriaData
-  };
-};
-
 export default function CrearTutoriasTutor() {
-  const { subjects, blocks, isLoading, loadInitialData } = useFormDataStore();
+  const { subjects, blocks, isLoading, loadInitialData, reset } = useFormDataStore();
   const { loadTutoring } = useTutoriaStore();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [formValues, setFormValues] = useState(null);
-  const router = useRouter();
   const { setTutoriaData } = useCreateTutoriaStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formValues, setFormValues] = useState(null);
+
+  const formikRef = useRef();
 
   const subjectOptions = useMemo(() =>
     subjects.map(subject => ({
@@ -292,10 +56,6 @@ export default function CrearTutoriasTutor() {
   useEffect(() => {
     loadInitialData();
   }, []);
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
 
   const handleSubmit = (values) => {
     setFormValues(values);
@@ -324,24 +84,30 @@ export default function CrearTutoriasTutor() {
 
   const handleConfirm = async () => {
     try {
-      setConfirmLoading(true);
+      setLoading(true);
       const tutoriaData = await formLogic.buildTutoriaData(formValues);
-      console.log(tutoriaData)
-      await scheduleService.postSchedule(tutoriaData);
-      handleSuccessClose();
+      await scheduleService.saveSchedule(tutoriaData);
+      setModalSuccessVisible(true);
     } catch (error) {
       console.error('Error al crear tutoría:', error);
       setModalVisible(false);
     } finally {
-      setConfirmLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleSuccessClose = () => {
+  const closeModal = () => {
     setModalVisible(false);
+  };
+
+  const handleSuccessClose = () => {
     loadInitialData();
     loadTutoring();
+    formikRef.current?.resetForm();
+    formLogic.resetData();
     router.back();
+    setModalSuccessVisible(false);
+    setModalVisible(false)
   };
 
   return (
@@ -364,12 +130,13 @@ export default function CrearTutoriasTutor() {
           <SizedBox height={24} />
 
           <Formik
+            innerRef={formikRef}
             initialValues={formLogic.getInitialValues()}
             validationSchema={formLogic.getValidationSchema()}
             enableReinitialize={true}
             onSubmit={handleSubmit}
           >
-            {({ handleSubmit, setFieldValue, values, errors, touched, isSubmitting }) => (
+            {({ handleSubmit, setFieldValue, values, errors, touched }) => (
               <View className="w-full h-[79%]">
                 <ScrollView
                   className="mb-4"
@@ -516,18 +283,18 @@ export default function CrearTutoriasTutor() {
                   <GeneralButton
                     title="Crear tutoría"
                     onPress={handleSubmit}
-                    disabled={isSubmitting || confirmLoading}
+                    disabled={loading}
                   />
                 </View>
               </View>
             )}
           </Formik>
 
-          <CreateTutoriaModal
+          <CreateTutoriaModal 
             visible={modalVisible}
-            onClose={closeModal}
+            onCancel={closeModal}
+            onClose={handleSuccessClose}
             onConfirm={handleConfirm}
-            loading={confirmLoading}
           />
         </View>
       </Screen>
