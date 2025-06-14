@@ -5,9 +5,9 @@ import InputField from "../InputField";
 import GeneralButton from "../GeneralButton";
 import SizedBox from "../SizedBox";
 import { Formik } from "formik";
-import DropdownInput from "../DropdownInput";
 import { useUserStore } from "../../store/useUserStore";
 import { userInfoService } from "../../service/infoUser";
+import NewDropdown from "../NewDropdown";
 
 export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
   const { career, setCareer } = useUserStore();
@@ -95,20 +95,15 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                         error={errors.codigo}
                         touched={touched.codigo}
                       />
-
-                      <DropdownInput
+                      <NewDropdown
                         label="Selecciona la carrera"
-                        selectedValue={values.career}
-                        onValueChange={(value) => {
-                          setFieldValue('career', value);
-                        }}
-                        items={(career ?? []).map((c) => ({
+                        value={values.career}
+                        onValueChange={(value) => setFieldValue('career', value)}
+                        options={(career ?? []).map((c) => ({
                           label: c.careerName,
                           value: c.careerId,
                         }))}
-                        error={errors.career}
-                        touched={touched.career}
-                        disabled={false}
+                        error={touched.career && errors.career}
                       />
 
                       <SizedBox height={16} />

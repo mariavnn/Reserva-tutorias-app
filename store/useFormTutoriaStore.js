@@ -2,18 +2,19 @@ import { create } from 'zustand';
 import { generalInfoService } from '../service/generalInfoService';
 import { scheduleService } from '../service/scheduleService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { availabilityService } from '../service/availabilityService';
 
 export const useFormDataStore = create((set) => ({
   subjects: [],
   blocks: [],
-  isLoading: false,
+  loading: false,
   error: null,
 
   tutoriaData: null,
 
   loadInitialData: async () => {
     try {
-      set({ isLoading: true });
+      set({ loading: true });
 
       const userId = await AsyncStorage.getItem('UserId');
 
@@ -29,13 +30,13 @@ export const useFormDataStore = create((set) => ({
       set({
         subjects: subjectsData || [],
         blocks: blocksData || [],
-        isLoading: false
+        loading: false
       });
 
     } catch (error) {
       console.error('Error loading initial data:', error);
       set({
-        isLoading: false,
+        loading: false,
         error: error.message || 'Failed to load initial data'
       });
     }
@@ -44,18 +45,20 @@ export const useFormDataStore = create((set) => ({
   loadTutoriaData: async (tutoriaId) => {
     try {
       set({ loading: true });
-      const userId = await AsyncStorage.getItem('UserId');
 
-      const [subjectsData, blocksData, tutoriaDetails] = await Promise.all([
-        generalInfoService.getInfoById('materiasUsuario', userId),
-        generalInfoService.getInfo('bloques'),
-        scheduleService.getScheduleById(tutoriaId),
-      ]);
+      const tutoriaDetails = await scheduleService.getScheduleById(tutoriaId);
+      const disponibilidadId = tutoriaDetails.availabilityId;
+
+      let disponibilidadData = null;
+
+      if (disponibilidadId) {
+        disponibilidadData = await availabilityService.getAvailabilityById(disponibilidadId);
+      }
 
       set({
-        subjects: subjectsData || [],
-        blocks: blocksData || [],
-        tutoriaData: tutoriaDetails,
+        tutoriaData: disponibilidadData
+          ? { ...tutoriaDetails, disponibilidad: disponibilidadData }
+          : tutoriaDetails,
         loading: false
       });
 
@@ -69,7 +72,7 @@ export const useFormDataStore = create((set) => ({
     subjects: [],
     blocks: [],
     tutoriaData: null,
-    isLoading: false,
+    loading: false,
     error: null
   })
 }));

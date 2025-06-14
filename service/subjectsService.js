@@ -1,14 +1,9 @@
-import axios from "axios"
-import { API_URL } from "../constants/API"
+import apiClient from "./apiClient";
 
 export const subjectService = {
   async getSubjects() {
     try {
-      const response = await axios.get(`${API_URL}/materias`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/materias`);
       return response.data
     } catch (error) {
       throw error
@@ -17,11 +12,7 @@ export const subjectService = {
 
   async getSubjectByIdCareer(idCareer) {
     try {
-      const response = await axios.get(`${API_URL}/materias/filtro/carrera/${idCareer}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/materias/filtro/carrera/${idCareer}`);
       return response.data
     } catch (error) {
       throw error

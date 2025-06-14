@@ -1,6 +1,5 @@
 import { View, Text } from "react-native";
 import React, { useEffect } from "react";
-import DropdownInput from "../../../../components/DropdownInput";
 import { Formik } from "formik";
 import * as yup from "yup";
 import SizedBox from "../../../../components/SizedBox";
@@ -17,6 +16,7 @@ import LoadingIndicator from "../../../../components/LoadingIndicator";
 import ConfirmRegisterModal2 from "../../../../components/modals/ConfirmRegisterModal2";
 import { authService } from "../../../../service/authService";
 import FailedModal from "../../../../components/modals/FailedModal";
+import NewDropdown from "../../../../components/NewDropdown";
 
 export default function AcademicForm() {
   const { personalData, academicData, setAcademicData, setPersonalData } = useRegisterStore();
@@ -29,26 +29,20 @@ export default function AcademicForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  
+
 
   const router = useRouter();
 
   const RegisterSchema = yup.object().shape({
     career: yup
-      .object({
-        label: yup.string().required(),
-        value: yup.string().required(),
-      })
-      .nullable()
+      .string()
       .required("Selecciona una carrera"),
     academicLevel: yup
-      .object({
-        label: yup.string().required(),
-        value: yup.string().required(),
-      })
+      .string()
       .nullable(),
     subjects: yup.array().min(1, "Selecciona al menos una materia"),
   });
+
 
   const semestres = [
     { label: "1er Semestre", value: "1" },
@@ -100,14 +94,14 @@ export default function AcademicForm() {
       const payload = {
         roleID: data?.typeUser?.value || 1,
         name: data?.name || " ",
-        lastName: data?.lastName ||" ",
+        lastName: data?.lastName || " ",
         user: data?.username || "",
-        password: data?.password || " ", 
+        password: data?.password || " ",
         email: data?.email || "",
-        semester: data?.academicLevel?.value || 1,
+        semester: data?.academicLevel || 1,
         subjects: data.subjects?.map((s) => s.idMateria)
       };
-      const response = await authService.registerUser(payload);
+      await authService.registerUser(payload);
       setPersonalData({});
       setAcademicData({});
     } catch (error) {
@@ -125,12 +119,13 @@ export default function AcademicForm() {
       email: personalData?.email,
       username: personalData?.userName,
       password: personalData?.password,
-      career: academicData?.career.label,
+      career: academicData?.careerName || academicData?.career,
       subjects: academicData?.subjects,
     };
   };
 
   const body = prepareData(personalData, academicData);
+
   return (
     <>
       {loading ? (
@@ -152,13 +147,10 @@ export default function AcademicForm() {
                 return;
               }
               setAcademicData(values);
-              const body = prepareData(personalData, academicData);
               setModalVisible(true);
             }}
           >
             {({
-              handleChange,
-              handleBlur,
               handleSubmit,
               setFieldValue,
               values,
@@ -166,41 +158,35 @@ export default function AcademicForm() {
               touched,
             }) => (
               <View className="w-full">
-                <DropdownInput
+                <NewDropdown
                   label="Selecciona la carrera a la que perteneces"
-                  selectedValue={values.career}
+                  value={values.career}
                   onValueChange={(value) => {
                     setFieldValue("career", value);
-                    if (value?.value) {
-                      handleGetSubject(value.value);
+                    if (value) {
+                      handleGetSubject(value);
                     }
                   }}
-                  items={(career ?? []).map((c) => ({
+                  options={(career ?? []).map((c) => ({
                     label: c.careerName,
-                    value: c.careerId,
+                    value: c.careerId.toString(),
                   }))}
-                  error={errors.career}
-                  touched={touched.career}
+                  error={errors.career && touched.career ? errors.career : null}
+                  placeholder="Selecciona una carrera"
                   disabled={false}
                 />
 
-                <SizedBox height={12} />
-
                 {userType === "Estudiante" && (
-                  <DropdownInput
+                  <NewDropdown
                     label="Selecciona tu semestre actual"
-                    selectedValue={values.academicLevel}
-                    onValueChange={(value) =>
-                      setFieldValue("academicLevel", value)
-                    }
-                    items={semestres}
-                    error={errors.academicLevel}
-                    touched={touched.academicLevel}
+                    value={values.academicLevel}
+                    onValueChange={(value) => setFieldValue("academicLevel", value)}
+                    options={semestres}
+                    error={errors.academicLevel && touched.academicLevel ? errors.academicLevel : null}
+                    placeholder="Selecciona un semestre"
                     disabled={false}
                   />
                 )}
-
-                <SizedBox height={12} />
 
                 <View className={`${containerHeight} py-2 pb-16`}>
                   <ScrollView keyboardShouldPersistTaps="handled">
@@ -226,7 +212,7 @@ export default function AcademicForm() {
                   </ScrollView>
                 </View>
 
-                <SizedBox height={12} />
+                <SizedBox height={6} />
 
                 <View className="absolute bottom-0 w-full px-4 py-2 bg-background-light">
                   <GeneralButton
@@ -240,31 +226,19 @@ export default function AcademicForm() {
         </View>
       )}
 
-      
-        <ConfirmRegisterModal2
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onConfirm={handleRegister}
-          data={body}
-          type="Registro"
-        />
-        <FailedModal
-          visible={error}
-          onClose={() => setError(false)}
-          message={errorMessage}
-        />
-      
 
-      {/* {toastVisible && (
-        <ConfirmModal
-          visible={toastVisible}
-          onClose={() => {
-            setToastVisible(false);
-            router.back();
-          }}
-          message="Registro confirmado con éxito"
-        />
-      )} */}
+      <ConfirmRegisterModal2
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={handleRegister}
+        data={body}
+        type="Registro"
+      />
+      <FailedModal
+        visible={error}
+        onClose={() => setError(false)}
+        message={errorMessage}
+      />
     </>
   );
 }

@@ -9,7 +9,6 @@ import { Screen } from "../components/Screen";
 import GeneralTitle from "../components/GeneralTitle";
 import InputField from "../components/InputField";
 import GeneralButton from "../components/GeneralButton";
-import DropdownInput from "../components/DropdownInput";
 import EditButton from "../components/EditButton";
 import MateriasContainer from "../components/MateriasContainer";
 import SizedBox from "../components/SizedBox";
@@ -18,6 +17,7 @@ import EditMaterias from "../components/modals/EditMaterias";
 import { userInfoService } from "../service/infoUser";
 import ConfirmRegisterModal2 from "../components/modals/ConfirmRegisterModal2";
 import { KeyboardAvoidingView } from "react-native";
+import NewDropdown from "../components/NewDropdown";
 
 export default function EditarInterfaz() {
   const router = useRouter();
@@ -85,12 +85,12 @@ export default function EditarInterfaz() {
   };
 
   const handleSubmit = async (value) => {
-     setEditInfo(value);
-          setConfirmModal(true)
+    setEditInfo(value);
+    setConfirmModal(true)
   }
 
   return (
-    
+
     <Screen>
       <View className="w-full px-4 mb-4">
         <View className="w-full flex-row items-center mt-2">
@@ -120,18 +120,18 @@ export default function EditarInterfaz() {
           errors,
           touched,
           resetForm,
-          setFieldValue 
+          setFieldValue
         }) => {
-          
+
           const isFormEmpty =
-                !values.name?.trim() &&
-                !values.lastName?.trim() &&
-                !values.email?.trim() &&
-                !values.username?.trim() &&
-                !values.career?.trim() &&
-                (values.academicLevel === null || Object.keys(values.academicLevel).length === 0);
-          
-          return(
+            !values.name?.trim() &&
+            !values.lastName?.trim() &&
+            !values.email?.trim() &&
+            !values.username?.trim() &&
+            !values.career?.trim() &&
+            (values.academicLevel === null || Object.keys(values.academicLevel).length === 0);
+
+          return (
             <KeyboardAvoidingView
               style={{ flex: 1 }}
               behavior={Platform.OS === "ios" ? "height" : "height"}
@@ -180,42 +180,36 @@ export default function EditarInterfaz() {
                       error={touched.username && errors.username}
                     />
 
-                    <EditButton 
-                      title={"Editar contraseña"} 
-                      onPress={() => setPasswordModalVisible(true)} 
+                    <EditButton
+                      title={"Editar contraseña"}
+                      onPress={() => setPasswordModalVisible(true)}
                     />
                   </View>
-                  <SizedBox height={18}/>
+                  <SizedBox height={18} />
 
                   <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
                     <Text className="text-black text-lg font-bold mb-3">
                       Información Académica
                     </Text>
                     <View className="flex gap-4">
-                      <DropdownInput
+                      <NewDropdown
                         label="Carrera"
-                        placeholder={
-                          userInfo?.career?.careerName ?? "Selecciona una carrera"
-                        }
-                        items={career.map((c) => ({
+                        value={values.career}
+                        onValueChange={(value) => setFieldValue("career", value)}
+                        options={career.map((c) => ({
                           label: c.careerName,
                           value: c.careerId,
                         }))}
-                        selectedValue={values.career}
-                        onValueChange={(value) => setFieldValue("career", value)}
                         error={touched.career && errors.career}
+                        placeholder={userInfo?.career?.careerName ?? "Selecciona una carrera"}
                       />
-                      <DropdownInput
+                      <NewDropdown
                         label="Semestre"
+                        value={values.academicLevel}
+                        onValueChange={(value) => setFieldValue("academicLevel", value)}
+                        options={semestres}
+                        error={errors.academicLevel && touched.academicLevel}
                         placeholder={userInfo.semester}
-                        selectedValue={values.academicLevel}
-                        onValueChange={(value) =>
-                          setFieldValue("academicLevel", value)
-                        }
-                        items={semestres}
-                        error={errors.academicLevel}
-                        touched={touched.academicLevel}
-                        disabled={false}
                       />
                       <View className="mt-3">
                         <ScrollView
@@ -233,22 +227,23 @@ export default function EditarInterfaz() {
                             ))}
                           </View>
                         </ScrollView>
-                        
-                        <EditButton title={"Editar Asignaturas"} onPress={() => router.push("../shared/editarSubject")}/>
+
+                        <EditButton title={"Editar Asignaturas"} onPress={() => router.push("../shared/editarSubject")} />
                       </View>
-                    
+
                     </View>
                   </View>
 
-                  <SizedBox height={24}/>
+                  <SizedBox height={24} />
                 </ScrollView>
 
                 <View className="mb-2">
-                  <GeneralButton title="Guardar cambios" onPress={handleSubmit} disabled={isFormEmpty}/>
+                  <GeneralButton title="Guardar cambios" onPress={handleSubmit} disabled={isFormEmpty} />
                 </View>
               </View>
-          </KeyboardAvoidingView>
-        )}}
+            </KeyboardAvoidingView>
+          )
+        }}
       </Formik>
       <EditPasswordModal
         visible={passwordModalVisible}

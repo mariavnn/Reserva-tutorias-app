@@ -1,14 +1,9 @@
-import axios from "axios"
-import { API_URL } from "../constants/API"
+import apiClient from "./apiClient";
 
 export const generalInfoService = {
   async getInfo(option) {
     try {
-      const response = await axios.get(`${API_URL}/${option}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/${option}`);
       return response.data
     } catch (error) {
       throw error
@@ -16,11 +11,7 @@ export const generalInfoService = {
   },
   async getInfoById(option, id) {
     try {
-      const response = await axios.get(`${API_URL}/${option}/${id}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/${option}/${id}`);
       return response.data
     } catch (error) {
       throw error

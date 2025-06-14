@@ -1,14 +1,17 @@
-import axios from "axios"
-import { API_URL } from "../constants/API"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from "./apiClient";
 
 export const authService = {
   async loginUser(body) {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, body, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.post(`/auth/login`, body);
+
+      const authHeader = response.headers['authorization'];
+
+      if (authHeader) {
+        await AsyncStorage.setItem('authToken', authHeader); 
+      }
+
       return response.headers
     } catch (error) {
       throw error
@@ -19,11 +22,7 @@ export const authService = {
   async registerUser(body) {
     console.log('BODY ', body);
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, body, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.post(`/auth/register`, body);
       return response.data
     } catch (error) {
       throw error

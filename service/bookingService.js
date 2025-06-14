@@ -1,16 +1,11 @@
-import axios from "axios"
-import { API_URL } from "../constants/API"
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import apiClient from "./apiClient";
 
 export const bookingService = {
   async getBookingByUserId() {
     try {
       const userId = await AsyncStorage.getItem('UserId');
-      const response = await axios.get(`${API_URL}/agendados/usuario/${userId}`,{
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/agendados/usuario/${userId}`);
       return response.data
     } catch (error) {
       throw error
@@ -23,11 +18,7 @@ export const bookingService = {
         userId,
         scheduleId
       }
-      const response = await axios.post(`${API_URL}/agendados`, body, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.post(`/agendados`, body);
       return response.data
     } catch (error) {
       throw error
@@ -35,11 +26,7 @@ export const bookingService = {
   },
   async deleteBookingByUserId(bookingId) {
     try {
-      const response = await axios.delete(`${API_URL}/agendados/${bookingId}`,{
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.delete(`/agendados/${bookingId}`);
       return response.data
     } catch (error) {
       throw error

@@ -1,16 +1,11 @@
-import axios from "axios";
-import { API_URL } from "../constants/API";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import apiClient from "./apiClient";
 
 export const userInfoService = {
   async getUserInfo() {
     try {
       const userId = await AsyncStorage.getItem("UserId");
-      const response = await axios.get(`${API_URL}/usuarios/${userId}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/usuarios/${userId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -19,11 +14,8 @@ export const userInfoService = {
 
   async getCareer() {
     try {
-      const response = await axios.get(`${API_URL}/carreras`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await apiClient.get(`/carreras`);
       return response.data;
     } catch (error) {
       throw error;
@@ -36,11 +28,7 @@ export const userInfoService = {
       if (!userId) {
         throw new Error("UserId not found in AsyncStorage");
       }
-      const response = await axios.put(`${API_URL}/usuarios/${userId}`, body, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.put(`/usuarios/${userId}`, body);
       return response.data;
     } catch (error) {
       throw error;
@@ -50,11 +38,7 @@ export const userInfoService = {
   async getProfesoresCompatibles() {
     try {
       const userId = await AsyncStorage.getItem('UserId');
-      const response = await axios.get(`${API_URL}/usuarios/profesores-compatibles/${userId}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.get(`/usuarios/profesores-compatibles/${userId}`);
       return response.data;
     } catch (error) {
       throw error

@@ -14,6 +14,7 @@ import { bookingService } from '../../../../service/bookingService';
 import SuccessModal from '../../../../components/modals/SuccessModal';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import SizedBox from '../../../../components/SizedBox';
 
 const TutoriasStudent = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -146,17 +147,18 @@ const TutoriasStudent = () => {
             <Text className="text-center text-blue-500">Tutores</Text>
           </TouchableOpacity>
         </View>
+        {/* Buscador y tabs */}
+        <SelectorTabStudent
+          tabs={['Disponibles', 'Agendadas', 'Historial']}
+          selectedTab={selectedTab}
+          onSelect={setSelectedTab}
+        />
+        <SizedBox height={5} />
         <ScrollView
           className="w-full"
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          {/* Buscador y tabs */}
-          <SelectorTabStudent
-            tabs={['Disponibles', 'Agendadas', 'Historial']}
-            selectedTab={selectedTab}
-            onSelect={setSelectedTab}
-          />
           {filteredTutorias.length === 0 ? (
             <View className="flex-1 w-full items-center mt-48">
               <MaterialCommunityIcons name="file-cancel-outline" size={45} color="gray" />
