@@ -28,7 +28,7 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
         "La hora de inicio no puede ser después de las 17:00",
         (value) => {
           if (!value) return false;
-          return value <= "17:00"; // correcto con nuevos valores
+          return value <= "17:00"; 
         }
       ),
     endHour: yup

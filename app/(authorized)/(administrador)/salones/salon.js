@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from "react-native";
 import React, { useState } from "react";
 import AddButton from "../../../../components/AddButton";
 import SalonContainer from "../../../../components/SalonContainer";
+import NuevoSalonModal from "../../../../components/modals/NuevoSalonModal";
 
 export default function SalonTab() {
   const salones =[
@@ -35,6 +36,7 @@ export default function SalonTab() {
       },
     },
   ]
+  const [salonModal, setSalonModal] = useState(false);
   
 
   const onEdit = () => {
@@ -49,7 +51,7 @@ export default function SalonTab() {
     <View className="flex-1">
       <View className="mt-10 mb-4 flex flex-row justify-between px-2 items-center">
         <Text className="font-semibold text-xl">Gestion de Salones</Text>
-        <AddButton label={"Nueva"} onPress={() => setNuevoBloqueModal(true)} />
+        <AddButton label={"Nueva"} onPress={() => setSalonModal(true)} />
       </View>
       <ScrollView>
         {salones.map((salon) =>(
@@ -63,6 +65,11 @@ export default function SalonTab() {
 
         )}
       </ScrollView>
+
+      <NuevoSalonModal
+        visible={salonModal}
+        onClose={() => setSalonModal(false)}
+      />
     </View>
   );
 }

@@ -11,6 +11,7 @@ export default function CareerContainer({ type, data, onEdit, onDelete }) {
     }
     return <Ionicons name="school-outline" size={24} color="#2563eb" />;
   };
+  
   return (
     <View className="w-full flex flex-row border border-gray-300 mt-3 p-4 rounded-lg justify-between">
       <View className="flex flex-row gap-4">

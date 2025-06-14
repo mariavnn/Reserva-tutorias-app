@@ -12,6 +12,8 @@ export default function CareerTab() {
     { id: 2, name: "Ingeniería Industrial", code: "II" },
   ];
 
+  //AQUI SE HACE LA PETICION A LA API GET, PUT, DELETE
+
   const onEdit = () => {
     console.log("EDITAR CAREER");
   };
