@@ -11,6 +11,8 @@ export default function NuevaCarreraModal({visible, onClose, onSubmit}) {
     nombreCarrera: yup.string().required("El nombre es obligatorio"),
     codigo: yup.string().required("El código es obligatorio"),
   });
+
+  //AQUI SE HACE EL POST PARA AGREGAR UNA CARRERA
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

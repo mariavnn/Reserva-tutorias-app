@@ -156,6 +156,7 @@ const TutoriasStudent = () => {
         <SizedBox height={5} />
         <ScrollView
           className="w-full"
+          contentContainerStyle={{ paddingBottom: 58, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >

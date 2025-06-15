@@ -1,8 +1,9 @@
-import { create } from 'zustand';
-import { userInfoService } from '../service/infoUser';
+import { create } from "zustand";
+import { userInfoService } from "../service/infoUser";
+import { subjectService } from "../service/subjectsService";
 
 export const useUserStore = create((set) => ({
-  userType: 'Estudiante',
+  userType: "Estudiante",
   setUserType: (type) => set({ userType: type }),
 
   userInfo: null,
@@ -10,6 +11,9 @@ export const useUserStore = create((set) => ({
 
   career: null,
   setCareer: (career) => set({ career }),
+
+  subjects: null,
+  setSubjects: (subjects) => set({ subjects }), 
 
   editedPassword: null,
   setEditedPassword: (password) => set({ editedPassword: password }),
@@ -36,5 +40,18 @@ export const useUserStore = create((set) => ({
     } finally {
       set({ loading: false });
     }
-  }
+  },
+
+  fetchSubjectsInfo: async (idCareer) => {
+    set({ loading: true });
+    try {
+      const subjects = await subjectService.getSubjectByIdCareer(idCareer);
+      console.log('subjects ', subjects);
+      set({ subjects: subjects });
+    } catch (error) {
+      throw error;
+    }finally{
+      set({loading: false});
+    }
+  },
 }));

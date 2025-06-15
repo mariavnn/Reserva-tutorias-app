@@ -1,7 +1,8 @@
 import { View, Text, ScrollView } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import AddButton from "../../../../components/AddButton";
 import SalonContainer from "../../../../components/SalonContainer";
+import NuevoSalonModal from "../../../../components/modals/NuevoSalonModal";
 
 export default function SalonTab() {
   const salones =[
@@ -26,14 +27,17 @@ export default function SalonTab() {
       capacity: 25,
       type: "Laboratorio",
       schedule: {
-        Lunes: ["14:00-16:00"],
-        Martes: ["08:00-10:00", "14:00-16:00"],
-        Miercoles: ["10:00-12:00"],
-        Jueves: ["08:00-10:00", "14:00-16:00"],
-        Viernes: ["10:00-12:00"],
+        monday: ["14:00-16:00"],
+        tuesday: ["08:00-10:00", "14:00-16:00"],
+        wednesday: ["10:00-12:00"],
+        thursday: ["08:00-10:00", "14:00-16:00"],
+        friday: ["10:00-12:00"],
+        saturday:["9:00-11:00"]
       },
     },
   ]
+  const [salonModal, setSalonModal] = useState(false);
+  
 
   const onEdit = () => {
     console.log("EDITAR CAREER");
@@ -47,7 +51,7 @@ export default function SalonTab() {
     <View className="flex-1">
       <View className="mt-10 mb-4 flex flex-row justify-between px-2 items-center">
         <Text className="font-semibold text-xl">Gestion de Salones</Text>
-        <AddButton label={"Nueva"} onPress={() => setNuevoBloqueModal(true)} />
+        <AddButton label={"Nueva"} onPress={() => setSalonModal(true)} />
       </View>
       <ScrollView>
         {salones.map((salon) =>(
@@ -61,6 +65,11 @@ export default function SalonTab() {
 
         )}
       </ScrollView>
+
+      <NuevoSalonModal
+        visible={salonModal}
+        onClose={() => setSalonModal(false)}
+      />
     </View>
   );
 }
