@@ -18,7 +18,7 @@ import { useFormDataStore } from '../../../../store/useFormTutoriaStore'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 import Feather from '@expo/vector-icons/Feather'
 import { useTutoriaStore } from '../../../../store/useTutoriasStore'
-import useFormLogic from '../../../../store/useFormLogic'
+import useFormLogic from '../../../../store/hooks/useFormLogic'
 import CreateTutoriaModal from '../../../../components/modals/CreateTutorialModal'
 
 const MODALITY_OPTIONS = [

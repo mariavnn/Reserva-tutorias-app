@@ -26,13 +26,13 @@ export default function TutorCard({ data, onPress }) {
             <Text className="text-lg font-bold text-gray-800 flex-1" numberOfLines={1}>
               {data.name}
             </Text>
-            <View className="flex-row items-center ml-2">
+            {/* <View className="flex-row items-center ml-2">
             
               <Text className="text-sm font-medium text-gray-600 mr-1">
                 {data.rating.toFixed(1)}
               </Text>
                 <FontAwesome6 name="star" solid size={12} color="#facc15" />
-            </View>
+            </View> */}
           </View>
 
           {/* Tags compactos */}
@@ -50,13 +50,13 @@ export default function TutorCard({ data, onPress }) {
           </View>
 
           {/* Footer con precio y botón */}
-          <View className="flex-row items-center justify-between">
+          {/* <View className="flex-row items-center justify-between">
             <View>
             </View>
             <View className="bg-blue-500 px-4 py-2 rounded-full shadow-sm">
               <Text className="text-white text-sm font-semibold">Ver Perfil</Text>
             </View>
-          </View>
+          </View> */}
         </View>
       </View>
     </TouchableOpacity>

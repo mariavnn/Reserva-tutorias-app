@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { availabilityService } from "../service/availabilityService";
+import { availabilityService } from "../../service/availabilityService";
 import * as yup from 'yup';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 

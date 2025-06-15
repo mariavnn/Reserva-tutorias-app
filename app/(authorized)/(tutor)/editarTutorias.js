@@ -20,7 +20,7 @@ import { useFormDataStore } from '../../../store/useFormTutoriaStore';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
-import useFormLogic from '../../../store/useFormLogic';
+import useFormLogic from '../../../store/hooks/useFormLogic';
 import NewDropdown from '../../../components/NewDropdown';
 import Entypo from '@expo/vector-icons/Entypo';
 
