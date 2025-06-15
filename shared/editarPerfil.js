@@ -1,5 +1,11 @@
-import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
-import React, { useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { useUserStore } from "../store/useUserStore";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -18,16 +24,39 @@ import { userInfoService } from "../service/infoUser";
 import ConfirmRegisterModal2 from "../components/modals/ConfirmRegisterModal2";
 import { KeyboardAvoidingView } from "react-native";
 import NewDropdown from "../components/NewDropdown";
+import LoadingIndicator from "../components/LoadingIndicator";
+import SelectableCard from "../components/SelectableCard";
 
 export default function EditarInterfaz() {
   const router = useRouter();
-  const { userInfo, career, editedPassword } = useUserStore();
+  const {
+    userInfo,
+    career,
+    editedPassword,
+    subjects,
+    fetchSubjectsInfo,
+    fetchUserInfo,
+    fetchCareerInfo,
+  } = useUserStore();
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
-  const [subjectsModalVisible, setSubjectsModalVisible] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editInfo, setEditInfo] = useState(null);
   const formikRef = useRef();
+
+  useEffect(() => {
+    const handleFetchSubjects = async () => {
+      setLoading(true);
+      try {
+        await fetchSubjectsInfo(userInfo?.career?.careerId);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    handleFetchSubjects();
+  }, []);
 
   const semestres = [
     { label: "1er Semestre", value: "1" },
@@ -46,17 +75,22 @@ export default function EditarInterfaz() {
     name: yup.string(),
     lastName: yup.string(),
     email: yup
-      .string().matches(/^[\w-.]+@unipamplona\.edu\.co$/, "El email debe ser institucional (@unipamplona.edu.co)")
+      .string()
+      .matches(
+        /^[\w-.]+@unipamplona\.edu\.co$/,
+        "El email debe ser institucional (@unipamplona.edu.co)"
+      )
       .email("Correo inválido"),
     username: yup.string(),
     career: yup.string(),
     academicLevel: yup
-      .object({
-        label: yup.string(),
-        value: yup.string(),
-      })
-      .nullable(),
-    // carrera y semestre los agregas si quieres validarlos también
+      .string()
+      .nullable()
+      .oneOf(
+        ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        "Semestre inválido"
+      ),
+    subjects: yup.array().min(1, "Selecciona al menos una materia"),
   });
 
   const initialValues = {
@@ -65,37 +99,38 @@ export default function EditarInterfaz() {
     email: "",
     username: "",
     career: "",
-    academicLevel: null,
-    // carrera: '',
-    // semestre: ''
+    academicLevel: "",
+    subjects: [],
   };
 
   const handleOnConfirm = async (data) => {
     setLoading(true);
     try {
-      const responde = await userInfoService.editUser(data);
+      const response = await userInfoService.editUser(data);
       fetchUserInfo();
       fetchCareerInfo();
+
+      console.log("UserInfo ", userInfo);
     } catch (error) {
       console.log(error);
-      throw error
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async (value) => {
+    console.log("Values ", value);
     setEditInfo(value);
-    setConfirmModal(true)
-  }
+    setConfirmModal(true);
+  };
 
   return (
-
     <Screen>
       <View className="w-full px-4 mb-4">
         <View className="w-full flex-row items-center mt-2">
           <TouchableOpacity onPress={() => router.back()}>
-            <View className="p-2 rounded-full bg-blue-500 justify-center items-center mr-2">
+            <View className="p-3 rounded-full bg-blue-500 justify-center items-center mr-2">
               <FontAwesome name="arrow-left" size={16} color="white" />
             </View>
           </TouchableOpacity>
@@ -120,16 +155,16 @@ export default function EditarInterfaz() {
           errors,
           touched,
           resetForm,
-          setFieldValue
+          setFieldValue,
         }) => {
-
           const isFormEmpty =
-            !values.name?.trim() &&
-            !values.lastName?.trim() &&
-            !values.email?.trim() &&
-            !values.username?.trim() &&
-            !values.career?.trim() &&
-            (values.academicLevel === null || Object.keys(values.academicLevel).length === 0);
+            !values.name &&
+            !values.lastName &&
+            !values.email &&
+            !values.username &&
+            !values.career &&
+            !values.academicLevel &&
+            (!values.subjects || values.subjects.length === 0);
 
           return (
             <KeyboardAvoidingView
@@ -187,7 +222,7 @@ export default function EditarInterfaz() {
                   </View>
                   <SizedBox height={18} />
 
-                  <View className="w-full bg-gray-200 p-4 rounded-xl mb-20">
+                  <View className="w-full bg-gray-200 p-4 rounded-xl mb-8">
                     <Text className="text-black text-lg font-bold mb-3">
                       Información Académica
                     </Text>
@@ -195,23 +230,35 @@ export default function EditarInterfaz() {
                       <NewDropdown
                         label="Carrera"
                         value={values.career}
-                        onValueChange={(value) => setFieldValue("career", value)}
+                        onValueChange={(value) =>
+                          setFieldValue("career", value)
+                        }
                         options={career.map((c) => ({
                           label: c.careerName,
                           value: c.careerId,
                         }))}
                         error={touched.career && errors.career}
-                        placeholder={userInfo?.career?.careerName ?? "Selecciona una carrera"}
+                        placeholder={
+                          userInfo?.career?.careerName ??
+                          "Selecciona una carrera"
+                        }
+                        disabled={true}
                       />
                       <NewDropdown
                         label="Semestre"
                         value={values.academicLevel}
-                        onValueChange={(value) => setFieldValue("academicLevel", value)}
+                        onValueChange={(selectedValue) => {
+                          setFieldValue("academicLevel", selectedValue);
+                        }}
                         options={semestres}
                         error={errors.academicLevel && touched.academicLevel}
                         placeholder={userInfo.semester}
                       />
-                      <View className="mt-3">
+
+                      <View className="mt-2">
+                        <Text className="mb-2 font-medium">
+                          Materias Actuales{" "}
+                        </Text>
                         <ScrollView
                           horizontal
                           showsHorizontalScrollIndicator={false}
@@ -228,9 +275,32 @@ export default function EditarInterfaz() {
                           </View>
                         </ScrollView>
 
-                        <EditButton title={"Editar Asignaturas"} onPress={() => router.push("../shared/editarSubject")} />
+                        {/* <EditButton
+                          title={"Editar Asignaturas"}
+                          onPress={() => setSubjectsModalVisible(true)}
+                        /> */}
                       </View>
-
+                      <ScrollView className="h-[300px]">
+                        {loading ? (
+                          <LoadingIndicator />
+                        ) : subjects?.length === 0 ? (
+                          <Text className="text-center text-gray-500 mt-4">
+                            No hay materias disponibles
+                          </Text>
+                        ) : (
+                          subjects?.map((subject) => (
+                            <SelectableCard
+                              key={subject.idMateria}
+                              label={subject.nombreMateria || subject}
+                              subject={subject}
+                              value={values.subjects}
+                              onChange={(newSubjects) =>
+                                setFieldValue("subjects", newSubjects)
+                              }
+                            />
+                          ))
+                        )}
+                      </ScrollView>
                     </View>
                   </View>
 
@@ -238,11 +308,15 @@ export default function EditarInterfaz() {
                 </ScrollView>
 
                 <View className="mb-2">
-                  <GeneralButton title="Guardar cambios" onPress={handleSubmit} disabled={isFormEmpty} />
+                  <GeneralButton
+                    title="Guardar cambios"
+                    onPress={handleSubmit}
+                    disabled={isFormEmpty}
+                  />
                 </View>
               </View>
             </KeyboardAvoidingView>
-          )
+          );
         }}
       </Formik>
       <EditPasswordModal
@@ -255,10 +329,10 @@ export default function EditarInterfaz() {
           setConfirmModal(false);
           formikRef.current?.resetForm();
         }}
-        onConfirm={handleOnConfirm(data)}
+        onConfirm={() => handleOnConfirm(editInfo)}
         data={editInfo}
+        type="edit"
       />
-
     </Screen>
   );
 }

@@ -16,7 +16,6 @@ export default function ConfirmRegisterModal2({
   onConfirm,
   type = "edit",
 }) {
-  const { fetchUserInfo, fetchCareerInfo } = useUserStore();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -28,19 +27,21 @@ export default function ConfirmRegisterModal2({
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      setLoading(true);
       if (isEdit) {
-        await onConfirm(data);
-        fetchUserInfo();
-        fetchCareerInfo();
+        const formattedData = {
+          ...data,
+          career: typeof data.career === "object" ? data.career.id : data.career,
+          subjects: data.subjects.map((s) =>
+            typeof s === "object" ? s.idMateria : s
+          ),
+        };
+        
+        await onConfirm(formattedData);
       } else {
-        console.log("LLAMADO A LA API");
-        console.log("DATA DE LA API ", data);
         await onConfirm(data);
       }
-
       setIsConfirmed(true);
-      onClose();
+      
     } catch (error) {
       setIsConfirmed(false);
       console.error("Error al confirmar:", error);
@@ -125,18 +126,18 @@ export default function ConfirmRegisterModal2({
                       {data?.career}
                     </Text>
                   )}
-                  {data.academicLevel?.label && (
+                  {data?.academicLevel?.label && (
                     <Text>
                       <Text className="font-semibold">Semestre:</Text>{" "}
-                      {data.academicLevel?.label}
+                      {data?.academicLevel?.label}
                     </Text>
                   )}
-                  {data.subjects && (
+                  {data?.subjects && (
                     <>
                       <Text className="font-semibold mt-2">
                         Materias seleccionadas:
                       </Text>
-                      {data.subjects?.map((m, i) => (
+                      {data?.subjects?.map((m, i) => (
                         <Text key={i}>• {m.nombreMateria}</Text>
                       ))}
                     </>
