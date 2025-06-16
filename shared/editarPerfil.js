@@ -33,6 +33,7 @@ export default function EditarInterfaz() {
     userInfo,
     career,
     editedPassword,
+    setEditedPassword,
     subjects,
     fetchSubjectsInfo,
     fetchUserInfo,
@@ -83,13 +84,7 @@ export default function EditarInterfaz() {
       .email("Correo inválido"),
     username: yup.string(),
     career: yup.string(),
-    academicLevel: yup
-      .string()
-      .nullable()
-      .oneOf(
-        ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-        "Semestre inválido"
-      ),
+    semester: yup.string().nullable(),
     subjects: yup.array().min(1, "Selecciona al menos una materia"),
   });
 
@@ -99,18 +94,20 @@ export default function EditarInterfaz() {
     email: "",
     username: "",
     career: "",
-    academicLevel: "",
+    semester: "",
     subjects: [],
   };
 
   const handleOnConfirm = async (data) => {
     setLoading(true);
+    console.log(data)
     try {
       const response = await userInfoService.editUser(data);
+      console.log("RESPUESTA DE LA PETICION ", response);
+      setEditedPassword(null);
       fetchUserInfo();
       fetchCareerInfo();
 
-      console.log("UserInfo ", userInfo);
     } catch (error) {
       console.log(error);
       throw error;
@@ -120,7 +117,7 @@ export default function EditarInterfaz() {
   };
 
   const handleSubmit = async (value) => {
-    console.log("Values ", value);
+    console.log('VALUE ', value);
     setEditInfo(value);
     setConfirmModal(true);
   };
@@ -163,7 +160,7 @@ export default function EditarInterfaz() {
             !values.email &&
             !values.username &&
             !values.career &&
-            !values.academicLevel &&
+            !values.semester &&
             (!values.subjects || values.subjects.length === 0);
 
           return (
@@ -246,13 +243,21 @@ export default function EditarInterfaz() {
                       />
                       <NewDropdown
                         label="Semestre"
-                        value={values.academicLevel}
-                        onValueChange={(selectedValue) => {
-                          setFieldValue("academicLevel", selectedValue);
-                        }}
+                        value={values.semester}
+                        onValueChange={(value) =>
+                          setFieldValue("semester", value)
+                        }
                         options={semestres}
-                        error={errors.academicLevel && touched.academicLevel}
-                        placeholder={userInfo.semester}
+                        error={
+                          errors.semester && touched.semester
+                            ? errors.semester
+                            : null
+                        }
+                        placeholder={
+                          userInfo?.semester ??
+                          "Selecciona una carrera"
+                        }
+                        disabled={false}
                       />
 
                       <View className="mt-2">
@@ -322,6 +327,7 @@ export default function EditarInterfaz() {
       <EditPasswordModal
         visible={passwordModalVisible}
         onClose={() => setPasswordModalVisible(false)}
+        onConfirm={handleOnConfirm}
       />
       <ConfirmRegisterModal2
         visible={confirmModal}

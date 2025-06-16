@@ -17,6 +17,7 @@ export default function ConfirmRegisterModal2({
   type = "edit",
 }) {
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const { editedPassword } = useUserStore();
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,19 +25,28 @@ export default function ConfirmRegisterModal2({
 
   const router = useRouter();
 
+     const prepareDataEdit = () => {
+        const  body = {
+          roleID: data?.roleId,
+          name: data?.name,
+          lastName: data?.lastName,
+          user: data?.username,
+          email: data?.email,
+          password: editedPassword,
+          semester: data?.academicLevel ? parseInt(data?.academicLevel?.value) : 1,
+          careerID: data?.career ? parseInt(data?.career?.careerId): 1,
+          idSubjects: data?.subjects?.map((s) => s.idMateria) || []
+        };
+        return body;
+    }
+
+
   const handleConfirm = async () => {
     setLoading(true);
     try {
       if (isEdit) {
-        const formattedData = {
-          ...data,
-          career: typeof data.career === "object" ? data.career.id : data.career,
-          subjects: data.subjects.map((s) =>
-            typeof s === "object" ? s.idMateria : s
-          ),
-        };
-        
-        await onConfirm(formattedData);
+        const body = prepareDataEdit();
+        await onConfirm(body);
       } else {
         await onConfirm(data);
       }
@@ -47,13 +57,15 @@ export default function ConfirmRegisterModal2({
       console.error("Error al confirmar:", error);
 
       let message = "Error desconocido";
+      console.log('ERROR RESPONSE ', error?.response?.data);
 
-      if (error.response?.data?.message) {
-        message = error.response.data.message;
-      } else if (error.message) {
-        message = error.message;
+      if (error.response?.data) {
+        console.log('error 1', error.response.data);
+        message = error.response.data;
+      } else{
+        message = "Error desconocido";
       }
-
+      console.log('MENSAJE ERROR ', message);
       setErrorMessage(message);
       setError(true);
     } finally {
@@ -126,10 +138,10 @@ export default function ConfirmRegisterModal2({
                       {data?.career}
                     </Text>
                   )}
-                  {data?.academicLevel?.label && (
+                  {data?.semester && (
                     <Text>
                       <Text className="font-semibold">Semestre:</Text>{" "}
-                      {data?.academicLevel?.label}
+                      {data?.semester}
                     </Text>
                   )}
                   {data?.subjects && (
@@ -213,10 +225,10 @@ export default function ConfirmRegisterModal2({
                       {data?.career}
                     </Text>
                   )}
-                  {data.academicLevel && (
+                  {data?.semester && (
                     <Text>
                       <Text className="font-semibold">Semestre:</Text>{" "}
-                      {data.academicLevel}
+                      {data?.semester}
                     </Text>
                   )}
                   {data.subjects && (

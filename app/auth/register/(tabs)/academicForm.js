@@ -19,7 +19,8 @@ import FailedModal from "../../../../components/modals/FailedModal";
 import NewDropdown from "../../../../components/NewDropdown";
 
 export default function AcademicForm() {
-  const { personalData, academicData, setAcademicData, setPersonalData } = useRegisterStore();
+  const { personalData, academicData, setAcademicData, setPersonalData } =
+    useRegisterStore();
   const { career, setCareer } = useUserStore();
   const [modalVisible, setModalVisible] = useState(false);
   const userType = useUserStore((state) => state.userType);
@@ -30,19 +31,13 @@ export default function AcademicForm() {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-
   const router = useRouter();
 
   const RegisterSchema = yup.object().shape({
-    career: yup
-      .string()
-      .required("Selecciona una carrera"),
-    academicLevel: yup
-      .string()
-      .nullable(),
+    career: yup.string().required("Selecciona una carrera"),
+    academicLevel: yup.string().nullable(),
     subjects: yup.array().min(1, "Selecciona al menos una materia"),
   });
-
 
   const semestres = [
     { label: "1er Semestre", value: "1" },
@@ -82,6 +77,7 @@ export default function AcademicForm() {
     } catch (error) {
       setError(true);
       setErrorMessage(error.message);
+      console.log("ERROR ", error);
       setSubjects([]);
     } finally {
       setLoadingSubjects(false);
@@ -91,17 +87,22 @@ export default function AcademicForm() {
   const handleRegister = async (data) => {
     setLoading(true);
     try {
-      const payload = {
-        roleID: data?.typeUser?.value || 1,
-        name: data?.name || " ",
-        lastName: data?.lastName || " ",
-        user: data?.username || "",
-        password: data?.password || " ",
-        email: data?.email || "",
-        semester: data?.academicLevel || 1,
-        subjects: data.subjects?.map((s) => s.idMateria)
+      console.log("DATA ANTES DE PAYLOAD ", data);
+      const body = {
+        roleID: data?.typeUser ? parseInt(data?.typeUser?.value) : 1,
+        name: data?.name,
+        lastName: data?.lastName,
+        user: data?.username,
+        email: data?.email,
+        password: data?.password,
+        semester: data?.academicLevel
+          ? parseInt(data?.academicLevel?.value)
+          : 1,
+        //career: data?.career ? parseInt(data?.career) : 1,
+        subjects: data?.subjects?.map((s) => s.idMateria) || [],
       };
-      await authService.registerUser(payload);
+
+      await authService.registerUser(body);
       setPersonalData({});
       setAcademicData({});
     } catch (error) {
@@ -120,6 +121,7 @@ export default function AcademicForm() {
       username: personalData?.userName,
       password: personalData?.password,
       career: academicData?.careerName || academicData?.career,
+      semester: academicData?.academicLevel,
       subjects: academicData?.subjects,
     };
   };
@@ -150,13 +152,7 @@ export default function AcademicForm() {
               setModalVisible(true);
             }}
           >
-            {({
-              handleSubmit,
-              setFieldValue,
-              values,
-              errors,
-              touched,
-            }) => (
+            {({ handleSubmit, setFieldValue, values, errors, touched }) => (
               <View className="w-full">
                 <NewDropdown
                   label="Selecciona la carrera a la que perteneces"
@@ -180,9 +176,15 @@ export default function AcademicForm() {
                   <NewDropdown
                     label="Selecciona tu semestre actual"
                     value={values.academicLevel}
-                    onValueChange={(value) => setFieldValue("academicLevel", value)}
+                    onValueChange={(value) =>
+                      setFieldValue("academicLevel", value)
+                    }
                     options={semestres}
-                    error={errors.academicLevel && touched.academicLevel ? errors.academicLevel : null}
+                    error={
+                      errors.academicLevel && touched.academicLevel
+                        ? errors.academicLevel
+                        : null
+                    }
                     placeholder="Selecciona un semestre"
                     disabled={false}
                   />
@@ -225,7 +227,6 @@ export default function AcademicForm() {
           </Formik>
         </View>
       )}
-
 
       <ConfirmRegisterModal2
         visible={modalVisible}

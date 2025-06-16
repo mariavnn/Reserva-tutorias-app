@@ -31,7 +31,6 @@ export default function ConfirmRegisterModal({visible, onClose, onConfirm}) {
             const body = prepareData();
             console.log('body', body);
             const response = await authService.registerUser(body);
-            console.log('REQUEST ', response);
             onConfirm();
         }catch(error){
             console.log('Error ', error);
