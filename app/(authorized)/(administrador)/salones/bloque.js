@@ -6,7 +6,7 @@ import NuevoBloqueModal from "../../../../components/modals/NuevoBloqueModal";
 import LoadingIndicator from "../../../../components/LoadingIndicator";
 import { blockService } from "../../../../service/blockService";
 
-export default function BloqueTab() {
+export default function BloqueTab({ onSelectBlock, refreshTrigger }) {
   const [nuevoBloqueModal, setNuevoBloqueModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [buildings, setBuildings] = useState([]);
@@ -24,6 +24,7 @@ export default function BloqueTab() {
   };
 
   useEffect(() => { fetchBlocks(); }, []);
+  useEffect(() => { fetchBlocks(); }, [refreshTrigger]);
 
   const handleCreateBlock = async (formData) => {
     setLoading(true);
@@ -90,6 +91,13 @@ export default function BloqueTab() {
       ]
     );
   };
+
+  const handleSelectBlock = (block) => {
+    if (onSelectBlock) {
+      onSelectBlock(block);
+    }
+  };
+
   return (
     <>
       {loading ? (
@@ -111,6 +119,7 @@ export default function BloqueTab() {
                 key={building.blockId}
                 data={building}
                 onDelete={onDelete}
+                onSelect={()=>handleSelectBlock(building)}
               />
             ))}
           </ScrollView>

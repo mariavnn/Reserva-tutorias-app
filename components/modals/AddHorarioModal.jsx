@@ -51,12 +51,12 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
   });
 
   const weekDays = [
-    { label: "Lunes", value: "1" },
-    { label: "Martes", value: "2" },
-    { label: "Miercoles", value: "3" },
-    { label: "Jueves", value: "4" },
-    { label: "Viernes", value: "5" },
-    { label: "Sabado", value: "6" },
+    { label: "Lunes", value: "LUNES" },
+    { label: "Martes", value: "MARTES" },
+    { label: "Miercoles", value: "MIERCOLES" },
+    { label: "Jueves", value: "JUEVES" },
+    { label: "Viernes", value: "VIERNES" },
+    { label: "Sabado", value: "SABADO" },
   ];
 
   const hours = [
@@ -64,6 +64,7 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
     { label: "10:00", value: "10:00" },
     { label: "11:00", value: "11:00" },
     { label: "12:00", value: "12:00" },
+    { label: "13:00", value: "13:00" },
     { label: "14:00", value: "14:00" },
     { label: "15:00", value: "15:00" },
     { label: "16:00", value: "16:00" },
@@ -93,7 +94,9 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
                   initialValues={{ day: "", startHour: "", endHour: "" }}
                   validationSchema={HorarioSchema}
                   onSubmit={(values, { resetForm }) => {
-                    onSubmit(values);
+                    if (onSubmit) {
+                      onSubmit(values);
+                    }
                     resetForm();
                     onClose();
                   }}
