@@ -17,55 +17,64 @@ export default function ConfirmRegisterModal2({
   type = "edit",
 }) {
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const { editedPassword } = useUserStore();
+  const { editedPassword, setEditedPassword, fetchUserInfo, fetchCareerInfo } =
+    useUserStore();
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const isEdit = type === "edit";
 
   const router = useRouter();
-
-     const prepareDataEdit = () => {
-        const  body = {
-          roleID: data?.roleId,
-          name: data?.name,
-          lastName: data?.lastName,
-          user: data?.username,
-          email: data?.email,
-          password: editedPassword,
-          semester: data?.academicLevel ? parseInt(data?.academicLevel?.value) : 1,
-          careerID: data?.career ? parseInt(data?.career?.careerId): 1,
-          idSubjects: data?.subjects?.map((s) => s.idMateria) || []
-        };
-        return body;
-    }
-
+  
+  const prepareDataEdit = () => {
+    const body = {
+      roleID: data?.roleId,
+      name: data?.name,
+      lastName: data?.lastName,
+      user: data?.username,
+      email: data?.email,
+      password: editedPassword,
+      semester: data?.semester ? parseInt(data?.semester) : 1,
+      careerID: data?.career ? parseInt(data?.career?.careerId) : 1,
+      idSubjects: data?.subjects?.map((s) => s.idMateria) || [],
+    };
+    return body;
+  };
 
   const handleConfirm = async () => {
     setLoading(true);
     try {
       if (isEdit) {
         const body = prepareDataEdit();
-        await onConfirm(body);
+        console.log("EDITAR BODY ", body);
+        const response = await userInfoService.editUser(body);
+        console.log("RESPUESTA DE LA PETICION 2", response);
       } else {
         await onConfirm(data);
       }
       setIsConfirmed(true);
-      
+      setEditedPassword(null);
+      fetchUserInfo();
+      fetchCareerInfo();
     } catch (error) {
       setIsConfirmed(false);
       console.error("Error al confirmar:", error);
 
       let message = "Error desconocido";
-      console.log('ERROR RESPONSE ', error?.response?.data);
 
-      if (error.response?.data) {
-        console.log('error 1', error.response.data);
-        message = error.response.data;
-      } else{
-        message = "Error desconocido";
+      const responseData = error?.response?.data;
+
+      if (responseData) {
+        if (typeof responseData === "string") {
+          message = responseData;
+        } else if (typeof responseData === "object" && responseData.error) {
+          message = responseData.error;
+        } else {
+          message = "Error al procesar la solicitud";
+        }
       }
-      console.log('MENSAJE ERROR ', message);
+
+      console.log("MENSAJE ERROR ", message);
       setErrorMessage(message);
       setError(true);
     } finally {
@@ -144,12 +153,12 @@ export default function ConfirmRegisterModal2({
                       {data?.semester}
                     </Text>
                   )}
-                  {data?.subjects && (
+                  {data?.subjects?.length > 0 && (
                     <>
                       <Text className="font-semibold mt-2">
                         Materias seleccionadas:
                       </Text>
-                      {data?.subjects?.map((m, i) => (
+                      {data.subjects.map((m, i) => (
                         <Text key={i}>• {m.nombreMateria}</Text>
                       ))}
                     </>
@@ -162,7 +171,7 @@ export default function ConfirmRegisterModal2({
                   <GeneralButton
                     title="Cancelar"
                     type="secondary"
-                    onPress={handleClose}
+                    onPress={onClose}
                     disabled={loading}
                   />
                 </View>
@@ -231,12 +240,12 @@ export default function ConfirmRegisterModal2({
                       {data?.semester}
                     </Text>
                   )}
-                  {data.subjects && (
+                  {data?.subjects?.length > 0 && (
                     <>
                       <Text className="font-semibold mt-2">
                         Materias seleccionadas:
                       </Text>
-                      {data.subjects?.map((m, i) => (
+                      {data.subjects.map((m, i) => (
                         <Text key={i}>• {m.nombreMateria}</Text>
                       ))}
                     </>

@@ -14,7 +14,7 @@ export const userInfoService = {
 
   async getCareer() {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem("authToken");
       const response = await apiClient.get(`/carreras`);
       return response.data;
     } catch (error) {
@@ -37,11 +37,27 @@ export const userInfoService = {
 
   async getProfesoresCompatibles() {
     try {
-      const userId = await AsyncStorage.getItem('UserId');
-      const response = await apiClient.get(`/usuarios/profesores-compatibles/${userId}`);
+      const userId = await AsyncStorage.getItem("UserId");
+      const response = await apiClient.get(
+        `/usuarios/profesores-compatibles/${userId}`
+      );
       return response.data;
     } catch (error) {
-      throw error
+      throw error;
     }
   },
-}
+
+  async deleteMateriasByUser(idSubjects) {
+    try {
+      const userId = await AsyncStorage.getItem("UserId");
+
+      const response = await apiClient.delete(`/usuarios/subjects/${userId}`, {
+        data: { idSubjects },
+      });
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+};

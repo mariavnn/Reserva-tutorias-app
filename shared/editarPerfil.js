@@ -26,6 +26,9 @@ import { KeyboardAvoidingView } from "react-native";
 import NewDropdown from "../components/NewDropdown";
 import LoadingIndicator from "../components/LoadingIndicator";
 import SelectableCard from "../components/SelectableCard";
+import FailedModal from "../components/modals/FailedModal";
+import { sortRoutes } from "expo-router/build/sortRoutes";
+import SuccessModal from "../components/modals/SuccessModal";
 
 export default function EditarInterfaz() {
   const router = useRouter();
@@ -41,6 +44,10 @@ export default function EditarInterfaz() {
   } = useUserStore();
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [editInfo, setEditInfo] = useState(null);
   const formikRef = useRef();
@@ -57,6 +64,8 @@ export default function EditarInterfaz() {
       }
     };
     handleFetchSubjects();
+    setError(false);
+    setConfirmModal(false);
   }, []);
 
   const semestres = [
@@ -85,7 +94,7 @@ export default function EditarInterfaz() {
     username: yup.string(),
     career: yup.string(),
     semester: yup.string().nullable(),
-    subjects: yup.array().min(1, "Selecciona al menos una materia"),
+    subjects: yup.array(),
   });
 
   const initialValues = {
@@ -100,14 +109,12 @@ export default function EditarInterfaz() {
 
   const handleOnConfirm = async (data) => {
     setLoading(true);
-    console.log(data)
     try {
       const response = await userInfoService.editUser(data);
-      console.log("RESPUESTA DE LA PETICION ", response);
+
       setEditedPassword(null);
       fetchUserInfo();
       fetchCareerInfo();
-
     } catch (error) {
       console.log(error);
       throw error;
@@ -116,10 +123,38 @@ export default function EditarInterfaz() {
     }
   };
 
-  const handleSubmit = async (value) => {
-    console.log('VALUE ', value);
-    setEditInfo(value);
-    setConfirmModal(true);
+  const handleOnSubmit = async (value) => {
+    const allFieldsEmpty = Object.values(value).every(
+      (v) => v === "" || (Array.isArray(v) && v.length === 0)
+    );
+
+    if (allFieldsEmpty) {
+      setError(true);
+      setErrorMessage("No hay datos para editar");
+    } else {
+      setEditInfo(value);
+      setConfirmModal(true);
+    }
+  };
+
+  const handleDeleteSubjects = async (idSubject) => {
+    try {
+      const idSubjects = Array.isArray(idSubject) ? idSubject : [idSubject];
+
+      const response = await userInfoService.deleteMateriasByUser(idSubjects);
+
+      fetchUserInfo();
+      fetchCareerInfo();
+
+      setSuccessMessage("Materia eliminada con éxito");
+      setSuccessModal(true);
+    } catch (error) {
+      console.log("ERROR ", error);
+      setError(true);
+      setErrorMessage("No hay datos para eliminar la materia");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -142,27 +177,17 @@ export default function EditarInterfaz() {
         innerRef={formikRef}
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={handleSubmit}
+        onSubmit={handleOnSubmit}
       >
         {({
           handleChange,
           handleBlur,
-          handleSubmit,
           values,
           errors,
           touched,
           resetForm,
           setFieldValue,
         }) => {
-          const isFormEmpty =
-            !values.name &&
-            !values.lastName &&
-            !values.email &&
-            !values.username &&
-            !values.career &&
-            !values.semester &&
-            (!values.subjects || values.subjects.length === 0);
-
           return (
             <KeyboardAvoidingView
               style={{ flex: 1 }}
@@ -254,8 +279,7 @@ export default function EditarInterfaz() {
                             : null
                         }
                         placeholder={
-                          userInfo?.semester ??
-                          "Selecciona una carrera"
+                          userInfo?.semester ?? "Selecciona una carrera"
                         }
                         disabled={false}
                       />
@@ -275,15 +299,13 @@ export default function EditarInterfaz() {
                                 key={materia.subjectId}
                                 label={materia.subjectName}
                                 icon={true}
+                                handleDelete={() =>
+                                  handleDeleteSubjects(materia.subjectId)
+                                }
                               />
                             ))}
                           </View>
                         </ScrollView>
-
-                        {/* <EditButton
-                          title={"Editar Asignaturas"}
-                          onPress={() => setSubjectsModalVisible(true)}
-                        /> */}
                       </View>
                       <ScrollView className="h-[300px]">
                         {loading ? (
@@ -293,17 +315,25 @@ export default function EditarInterfaz() {
                             No hay materias disponibles
                           </Text>
                         ) : (
-                          subjects?.map((subject) => (
-                            <SelectableCard
-                              key={subject.idMateria}
-                              label={subject.nombreMateria || subject}
-                              subject={subject}
-                              value={values.subjects}
-                              onChange={(newSubjects) =>
-                                setFieldValue("subjects", newSubjects)
-                              }
-                            />
-                          ))
+                          subjects?.map((subject) => {
+                            const isUserSubject = userInfo.subjectUsers.some(
+                              (s) => s.subjectId === subject.idMateria
+                            );
+
+                            return (
+                              <SelectableCard
+                                key={subject.idMateria}
+                                label={subject.nombreMateria}
+                                subject={subject}
+                                value={values.subjects}
+                                onChange={(newSubjects) =>
+                                  setFieldValue("subjects", newSubjects)
+                                }
+                                disabled={isUserSubject}
+                                assignedSubjects={userInfo.subjectUsers}
+                              />
+                            );
+                          })
                         )}
                       </ScrollView>
                     </View>
@@ -315,8 +345,12 @@ export default function EditarInterfaz() {
                 <View className="mb-2">
                   <GeneralButton
                     title="Guardar cambios"
-                    onPress={handleSubmit}
-                    disabled={isFormEmpty}
+                    onPress={() => {
+                      const values = formikRef.current?.values;
+                      console.log("FORZANDO ENVÍO: ", values);
+                      handleOnSubmit(values);
+                    }}
+                    // disabled={isFormEmpty}
                   />
                 </View>
               </View>
@@ -329,15 +363,27 @@ export default function EditarInterfaz() {
         onClose={() => setPasswordModalVisible(false)}
         onConfirm={handleOnConfirm}
       />
+
+      <SuccessModal
+        visible={successModal}
+        onClose={() => setSuccessModal(false)}
+        message={successMessage}
+      />
+
       <ConfirmRegisterModal2
         visible={confirmModal}
         onClose={() => {
           setConfirmModal(false);
           formikRef.current?.resetForm();
         }}
-        onConfirm={() => handleOnConfirm(editInfo)}
         data={editInfo}
         type="edit"
+      />
+
+      <FailedModal
+        visible={error}
+        message={errorMessage}
+        onClose={() => setError(false)}
       />
     </Screen>
   );
