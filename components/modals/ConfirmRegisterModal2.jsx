@@ -25,7 +25,7 @@ export default function ConfirmRegisterModal2({
   const isEdit = type === "edit";
 
   const router = useRouter();
-  
+
   const prepareDataEdit = () => {
     const body = {
       roleID: data?.roleId,
@@ -34,8 +34,8 @@ export default function ConfirmRegisterModal2({
       user: data?.username,
       email: data?.email,
       password: editedPassword,
-      semester: data?.semester ? parseInt(data?.semester) : 1,
-      careerID: data?.career ? parseInt(data?.career?.careerId) : 1,
+      semester: parseInt(data?.semester),
+      careerID: parseInt(data?.career?.careerId),
       idSubjects: data?.subjects?.map((s) => s.idMateria) || [],
     };
     return body;
