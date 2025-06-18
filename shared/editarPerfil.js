@@ -148,7 +148,7 @@ export default function EditarInterfaz() {
       setSuccessMessage("Materia eliminada con éxito");
       setSuccessModal(true);
     } catch (error) {
-      console.log("ERROR ", error);
+      console.error("ERROR ", error);
       setError(true);
       setErrorMessage("No hay datos para eliminar la materia");
     } finally {
@@ -346,7 +346,6 @@ export default function EditarInterfaz() {
                     title="Guardar cambios"
                     onPress={() => {
                       const values = formikRef.current?.values;
-                      console.log("FORZANDO ENVÍO: ", values);
                       handleOnSubmit(values);
                     }}
                     // disabled={isFormEmpty}

@@ -46,9 +46,7 @@ export default function ConfirmRegisterModal2({
     try {
       if (isEdit) {
         const body = prepareDataEdit();
-        console.log("EDITAR BODY ", body);
         const response = await userInfoService.editUser(body);
-        console.log("RESPUESTA DE LA PETICION 2", response);
       } else {
         await onConfirm(data);
       }
@@ -74,7 +72,6 @@ export default function ConfirmRegisterModal2({
         }
       }
 
-      console.log("MENSAJE ERROR ", message);
       setErrorMessage(message);
       setError(true);
     } finally {
