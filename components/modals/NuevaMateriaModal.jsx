@@ -12,12 +12,27 @@ import NewDropdown from "../NewDropdown";
 export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
   const { career, setCareer } = useUserStore();
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const MateriaSchema = yup.object().shape({
-    nombreCarrera: yup.string().required("El nombre es obligatorio"),
+    nombreMateria: yup.string().required("El nombre es obligatorio"),
     codigo: yup.string().required("El código es obligatorio"),
     career: yup.string().required("La carrera es obligatoria"),
     creditos: yup.number().required("Los créditos son obligatorios"),
   });
+
+  const handleSubmit = async (values, { resetForm }) => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      await onSubmit(values);
+      resetForm();
+    } catch (error) {
+      console.error("❌ Error en el submit del modal:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const handleCareerInfo = async () => {
@@ -56,17 +71,14 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
 
                 <Formik
                   initialValues={{
-                    nombreCarrera: '',
+                    nombreMateria: '',
                     codigo: '',
                     career: '',
                     creditos: 0,
                   }}
                   validationSchema={MateriaSchema}
-                  onSubmit={(values, { resetForm }) => {
-                    onSubmit(values);
-                    resetForm();
-                    onClose();
-                  }}
+                  onSubmit={handleSubmit}
+                  enableReinitialize={true}
                 >
                   {({
                     handleChange,
@@ -79,18 +91,18 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                   }) => (
                     <>
                       <InputField
-                        label="Nombre de la carrera"
-                        value={values.nombreCarrera}
-                        onChangeText={handleChange('nombreCarrera')}
-                        onBlur={handleBlur('nombreCarrera')}
-                        error={errors.nombreCarrera}
-                        touched={touched.nombreCarrera}
+                        label="Nombre de la materia"
+                        value={values.nombreMateria}
+                        onChangeText={handleChange('nombreMateria')}
+                        onBlur={handleBlur('nombreMateria')}
+                        error={errors.nombreMateria}
+                        touched={touched.nombreMateria}
                       />
 
                       <InputField
-                        label="Código de la carrera"
+                        label="Código de la materia"
                         value={values.codigo}
-                        onChangeText={handleChange('codigo')}
+                        onChangeText={handleChange('codigo')} 
                         onBlur={handleBlur('codigo')}
                         error={errors.codigo}
                         touched={touched.codigo}
@@ -124,10 +136,16 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                             title="Cancelar"
                             type="secondary"
                             onPress={onClose}
+                            disabled={isSubmitting}
                           />
                         </View>
                         <View className="w-2/5">
-                          <GeneralButton title="Guardar" onPress={handleSubmit} />
+                          <GeneralButton 
+                            title={isSubmitting ? "Guardando..." : "Guardar"} 
+                            onPress={handleSubmit}
+                            disabled={isSubmitting}
+                            loading={isSubmitting}
+                          />
                         </View>
                       </View>
                     </>

@@ -6,6 +6,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
+  TextInput,
 } from "react-native";
 import React from "react";
 import { Formik } from "formik";
@@ -13,26 +14,21 @@ import * as yup from "yup";
 import { Keyboard } from "react-native";
 import InputField from "../InputField";
 import GeneralButton from "../GeneralButton";
-import NewDropdown from "../NewDropdown";
-import SizedBox from "../SizedBox";
 
-export default function NuevoSalonModal({ visible, onClose }) {
+export default function NuevoSalonModal({
+  visible,
+  onClose,
+  selectedBlock,
+  onSubmit,
+}) {
   const SalonSchema = yup.object().shape({
     nombreSalon: yup.string().required("El nombre es obligatorio"),
-    bloque: yup.string().required("El bloque es obligatorio"),
-    capacidad: yup.number().required("La capacidad es obligatorio"),
-    tipoSalon: yup.string().required("El tipo de salon es obligatorio"),
+    capacidad: yup
+      .number()
+      .required("La capacidad es obligatorio")
+      .min(1, "La capacidad debe ser mayor a 0"),
+    tipoSalon: yup.string(),
   });
-
-  const buildings = [
-    { value: 1, label: "Bloque A" },
-    { value: 2, label: "Bloque B" },
-  ];
-
-  const typeClassroom = [
-    { value: 1, label: "Aula" },
-    { value: 2, label: "Laboratorio" },
-  ];
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -55,15 +51,13 @@ export default function NuevoSalonModal({ visible, onClose }) {
                 <Formik
                   initialValues={{
                     nombreSalon: "",
-                    bloque: "",
-                    capacidad: 0,
+                    capacidad: "",
                     tipoSalon: "",
                   }}
                   validationSchema={SalonSchema}
                   onSubmit={(values, { resetForm }) => {
-                    //onSubmit(values);
+                    onSubmit(values);
                     resetForm();
-                    onClose();
                   }}
                 >
                   {({
@@ -84,20 +78,21 @@ export default function NuevoSalonModal({ visible, onClose }) {
                         touched={touched.nombreSalon}
                       />
 
-                      <NewDropdown
-                        label="Bloque"
-                        value={values.bloque}
-                        onValueChange={(value) => {
-                          setFieldValue("bloque", value);
-                          console.log(value);
-                        }}
-                        options={buildings}
-                        error={
-                          errors.bloque && touched.bloque ? errors.bloque : null
-                        }
-                        placeholder="Selecciona un Bloque"
-                      />
-                      <SizedBox height={8} />
+                      <View className="mb-4">
+                        <View className="flex-row gap-2 items-center mb-1">
+                          <Text className="text-gray-700 mr-1">Bloque</Text>
+                        </View>
+                        <View className="flex-row items-center border border-gray-300 rounded-md px-3 py-2 bg-gray-100">
+                          <TextInput
+                            style={{ minHeight: 32 }}
+                            className="flex-1 text-gray-600"
+                            value={selectedBlock?.blockName || ""}
+                            editable={false}
+                            pointerEvents="none"
+                          />
+                        </View>
+                      </View>
+
                       <InputField
                         type="number"
                         label="Capacidad"
@@ -106,22 +101,17 @@ export default function NuevoSalonModal({ visible, onClose }) {
                         onBlur={handleBlur("capacidad")}
                         error={errors.capacidad}
                         touched={touched.capacidad}
+                        keyboardType="numeric"
                       />
 
-                      <NewDropdown
-                        label="Tipo de Salon"
+                      <InputField
+                        label="Tipo de Salon (Opcional)"
                         value={values.tipoSalon}
-                        onValueChange={(value) => {
-                          setFieldValue("tipoSalon", value);
-                          console.log(value);
-                        }}
-                        options={typeClassroom}
-                        error={
-                          errors.tipoSalon && touched.tipoSalon
-                            ? errors.tipoSalon
-                            : null
-                        }
-                        placeholder="Selecciona un Tipo de Salon"
+                        onChangeText={handleChange("tipoSalon")}
+                        onBlur={handleBlur("tipoSalon")}
+                        error={errors.tipoSalon}
+                        touched={touched.tipoSalon}
+                        placeholder="Ej: Aula, Laboratorio, etc."
                       />
 
                       <View className="mt-4 flex-row justify-between">
@@ -133,7 +123,10 @@ export default function NuevoSalonModal({ visible, onClose }) {
                           />
                         </View>
                         <View className="w-2/5">
-                          <GeneralButton title="Guardar" />
+                          <GeneralButton
+                            title="Guardar"
+                            onPress={handleSubmit}
+                          />
                         </View>
                       </View>
                     </>
