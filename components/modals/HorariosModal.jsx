@@ -33,9 +33,7 @@ export default function HorariosModal({ data, horarios, visible, onClose }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <TouchableWithoutFeedback onPress={handleClose}>
         <View className="flex-1 justify-center items-center bg-black/40 px-4">
-          <TouchableWithoutFeedback onPress={() => {}}>
             <View className="bg-white p-6 rounded-lg w-full max-h-[80%]">
               <Text className="text-lg font-bold text-center mb-1">
                 Horarios - {(data?.section || '').toUpperCase()} {data?.location || ''}
@@ -98,9 +96,7 @@ export default function HorariosModal({ data, horarios, visible, onClose }) {
                 </Text>
               </TouchableOpacity>
             </View>
-          </TouchableWithoutFeedback>
         </View>
-      </TouchableWithoutFeedback>
     </Modal>
   );
 }
