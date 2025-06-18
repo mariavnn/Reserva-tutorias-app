@@ -1,30 +1,87 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
 import AddButton from "../../../../components/AddButton";
 import SalonContainer from "../../../../components/SalonContainer";
 import NuevoSalonModal from "../../../../components/modals/NuevoSalonModal";
+import LoadingIndicator from "../../../../components/LoadingIndicator";
+import SuccessModal from "../../../../components/modals/SuccessModal";
+import FailedModal from "../../../../components/modals/FailedModal";
+import ConfirmModal2 from "../../../../components/modals/ConfirmModal2";
 import { Ionicons } from "@expo/vector-icons";
 import { availabilityService } from "../../../../service/availabilityService";
-import LoadingIndicator from "../../../../components/LoadingIndicator";
 import { classroomService } from "../../../../service/classroomService";
 
 export default function SalonTab({ selectedBlock, onBackToBlocks }) {
   const [salonModal, setSalonModal] = useState(false);
   const [salones, setSalones] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [successModal, setSuccessModal] = useState({ visible: false, message: "" });
+  const [errorModal, setErrorModal] = useState({ visible: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({ 
+    visible: false, 
+    message: "", 
+    onConfirm: null 
+  });
 
-  useEffect(() => {
-    if (selectedBlock && selectedBlock.classrooms) {
-      const salonesConBloque = selectedBlock.classrooms.map((classroom) => ({
+  const fetchClassroomsByBlock = async () => {
+    if (!selectedBlock?.blockId) return;
+    
+    setLoading(true);
+    try {
+      const response = await classroomService.getClassroomsByBlock(selectedBlock.blockId);
+      let classrooms = [];
+      if (response.content && Array.isArray(response.content)) {
+        classrooms = response.content;
+      } else if (Array.isArray(response)) {
+        classrooms = response;
+      } else {
+        classrooms = [];
+      }
+      
+      const salonesConBloque = classrooms.map((classroom) => ({
         ...classroom,
         blockName: selectedBlock.blockName,
         section: selectedBlock.section,
       }));
+      
       setSalones(salonesConBloque);
-    } else {
-      setSalones([]);
+    } catch (e) {
+      console.error("Error al obtener salones del bloque: ", e);
+      showError("Error al cargar los salones");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedBlock) {
+      fetchClassroomsByBlock();
     }
   }, [selectedBlock]);
+
+  const showSuccess = (message) => {
+    setSuccessModal({ visible: true, message });
+  };
+
+  const showError = (message) => {
+    setErrorModal({ visible: true, message });
+  };
+
+  const showConfirm = (message, onConfirm) => {
+    setConfirmModal({ visible: true, message, onConfirm });
+  };
+
+  const closeSuccessModal = () => {
+    setSuccessModal({ visible: false, message: "" });
+  };
+
+  const closeErrorModal = () => {
+    setErrorModal({ visible: false, message: "" });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ visible: false, message: "", onConfirm: null });
+  };
 
   const handleCreateAvailability = async (formData, classroomId) => {
     if (loading) return;
@@ -37,72 +94,65 @@ export default function SalonTab({ selectedBlock, onBackToBlocks }) {
         endTime: formData.endHour,
       };
       await availabilityService.createAvailability(availabilityData);
-
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert(
-          "Éxito",
-          "El horario disponible se ha creado correctamente"
-        );
-      }, 100);
+      showSuccess("El horario disponible se ha creado correctamente");
     } catch (e) {
       console.error("❌ Error al crear la disponibilidad:", e);
-      const errorMessage =
-        e.response?.data?.error ||
-        e.response?.data?.message ||
-        e.message ||
-        "No se pudo crear la disponibilidad";
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert("Error", errorMessage);
-      }, 100);
+      const errorMessage = e.response?.data?.error || e.response?.data?.message || e.message || "No se pudo crear la disponibilidad";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateClassroom = async (formData) => {
+    setLoading(true);
+    try {
+      const classroomData = {
+        blockId: selectedBlock.blockId,
+        description: formData.tipoSalon || "",
+        location: formData.nombreSalon,
+        capacity: parseInt(formData.capacidad),
+      };
+      
+      await classroomService.createClassroom(classroomData);
+      setSalonModal(false);
+      await fetchClassroomsByBlock();
+      
+      showSuccess("El salón se ha creado correctamente");
+    } catch (e) {
+      console.error("❌ Error al crear el salón:", e);
+      setSalonModal(false);
+      const errorMessage = e.response?.data?.error || e.response?.data?.message || e.message || "No se pudo crear el salón";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClassroom = async (id) => {
+    setLoading(true);
+    try {
+      await classroomService.deleteClassroom(id);
+      await fetchClassroomsByBlock();
+      showSuccess("El salón se ha eliminado correctamente");
+    } catch (e) {
+      console.error("❌ Error al eliminar el salón:", e);
+      const errorMessage = e.response?.data?.error || e.response?.data?.message || e.message || "No se pudo eliminar el salón";
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const onDelete = (id) => {
-    Alert.alert(
-      "Confirmar eliminación",
-      `¿Estás seguro de que deseas eliminar este salon?`,
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await classroomService.deleteClassroom(id);
-              setSalones((prevSalones) =>
-                prevSalones.filter((salon) => salon.classroomId !== id)
-              );
-
-              if (onRefreshBlocks) {
-                onRefreshBlocks();
-              }
-              setTimeout(() => {
-                Alert.alert("Éxito", "El salon se ha eliminado correctamente", [
-                  { text: "OK" },
-                ]);
-              }, 100);
-            } catch (e) {
-              const errorMessage =
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "No se pudo eliminar el salon";
-              Alert.alert("Error", errorMessage);
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    const salon = salones.find((s) => s.classroomId === id);
+    const salonName = salon?.location || "este salón";
+    const message = `¿Estás seguro de que deseas eliminar el salón "${salonName}"?`;
+    
+    showConfirm(message, () => {
+      closeConfirmModal();
+      handleDeleteClassroom(id);
+    });
   };
 
   return (
@@ -125,7 +175,7 @@ export default function SalonTab({ selectedBlock, onBackToBlocks }) {
                 </Text>
               </View>
             </View>
-            <AddButton label={"Nueva"} onPress={() => setSalonModal(true)} />
+            <AddButton label="Nueva" onPress={() => setSalonModal(true)} />
           </View>
 
           <ScrollView className="mb-20">
@@ -147,14 +197,34 @@ export default function SalonTab({ selectedBlock, onBackToBlocks }) {
               </View>
             )}
           </ScrollView>
-
-          <NuevoSalonModal
-            visible={salonModal}
-            onClose={() => setSalonModal(false)}
-            selectedBlock={selectedBlock}
-          />
         </View>
       )}
+
+      <NuevoSalonModal
+        visible={salonModal}
+        onClose={() => setSalonModal(false)}
+        selectedBlock={selectedBlock}
+        onSubmit={handleCreateClassroom}
+      />
+
+      <SuccessModal
+        visible={successModal.visible}
+        message={successModal.message}
+        onClose={closeSuccessModal}
+      />
+
+      <FailedModal
+        visible={errorModal.visible}
+        message={errorModal.message}
+        onClose={closeErrorModal}
+      />
+
+      <ConfirmModal2
+        visible={confirmModal.visible}
+        message={confirmModal.message}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+      />
     </>
   );
 }

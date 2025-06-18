@@ -81,7 +81,7 @@ export default function SalonContainer({ data, onDelete, onCreateAvailability, i
         <Text className="text-md text-gray-500">{data.blockName}</Text>
         <View className="flex flex-row items-center mb-3 gap-2">
           <View className="bg-blue-100 rounded-2xl px-2 py-1">
-            <Text>{data.description ? data.description : "AULA"}</Text>
+            <Text>{data.description ? (data.description).toUpperCase() : "AULA"}</Text>
           </View>
 
           <View className="flex flex-row gap-1">

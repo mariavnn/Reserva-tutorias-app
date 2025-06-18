@@ -27,7 +27,6 @@ export default function Salones() {
           <SalonTab 
             selectedBlock={selectedBlock}
             onBackToBlocks={handleBackToBlocks}
-            onRefreshBlocks={handleRefreshBlocks}
           />
         ) : (
           <BloqueTab 

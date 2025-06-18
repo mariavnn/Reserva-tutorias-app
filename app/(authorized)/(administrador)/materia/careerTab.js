@@ -1,16 +1,26 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import CareerContainer from "../../../../components/CareerContainer";
 import GeneralTitle from "../../../../components/GeneralTitle";
 import AddButton from "../../../../components/AddButton";
 import NuevaCarreraModal from "../../../../components/modals/NuevaCarreraModal";
-import { careerService } from "../../../../service/careerService";
 import LoadingIndicator from "../../../../components/LoadingIndicator";
+import SuccessModal from "../../../../components/modals/SuccessModal";
+import FailedModal from "../../../../components/modals/FailedModal";
+import ConfirmModal2 from "../../../../components/modals/ConfirmModal2";
+import { careerService } from "../../../../service/careerService";
 
 export default function CareerTab() {
   const [addCareerModal, setAddCareerModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [careers, setCareers] = useState([]);
+  const [successModal, setSuccessModal] = useState({ visible: false, message: "" });
+  const [errorModal, setErrorModal] = useState({ visible: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({ 
+    visible: false, 
+    message: "", 
+    onConfirm: null 
+  });
   
   const fetchCareers = async () => {
     setLoading(true);
@@ -19,18 +29,42 @@ export default function CareerTab() {
       setCareers(response);
     } catch (e) {
       console.error("Error al obtener carreras:", e);
-    }
-    finally{
+      showError("Error al cargar las carreras");
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() =>{
-    fetchCareers()
-  },[]);
+  useEffect(() => {
+    fetchCareers();
+  }, []);
+
+  const showSuccess = (message) => {
+    setSuccessModal({ visible: true, message });
+  };
+
+  const showError = (message) => {
+    setErrorModal({ visible: true, message });
+  };
+
+  const showConfirm = (message, onConfirm) => {
+    setConfirmModal({ visible: true, message, onConfirm });
+  };
+
+  const closeSuccessModal = () => {
+    setSuccessModal({ visible: false, message: "" });
+  };
+
+  const closeErrorModal = () => {
+    setErrorModal({ visible: false, message: "" });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ visible: false, message: "", onConfirm: null });
+  };
 
   const handleCreateCareer = async (formData) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const careerData = {
         careerName: formData.nombreCarrera,
@@ -39,55 +73,48 @@ export default function CareerTab() {
       
       await careerService.createCareer(careerData);
       await fetchCareers();
-      Alert.alert(
-        "Éxito", 
-        "La carrera se ha creado correctamente",
-        [{ text: "OK", onPress: () => setAddCareerModal(false) }]
-      );
+      setAddCareerModal(false);
+      showSuccess("La carrera se ha creado correctamente");
       
     } catch (error) {
       console.error("❌ Error al crear carrera:", error);
-      setAddCareerModal(false)
+      setAddCareerModal(false);
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "No se pudo crear la carrera";
-      Alert.alert("Error", errorMessage);
+      showError(errorMessage);
     } finally {
-      setLoading(false)
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCareer = async (careerId) => {
+    try {
+      setLoading(true);
+      await careerService.deleteCareer(careerId);
+      await fetchCareers();
+      showSuccess("La carrera se ha eliminado correctamente");
+    } catch (error) {
+      console.error("❌ Error al eliminar carrera:", error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "No se pudo eliminar la carrera";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onDelete = (careerId) => {
     const career = careers.find(c => c.careerId === careerId);
     const careerName = career?.careerName || "esta carrera";
+    const message = `¿Estás seguro de que deseas eliminar "${careerName}"?`;
 
-    Alert.alert("Confirmar eliminación", `¿Estás seguro de que deseas eliminar "${careerName}"?`,
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            setLoading(true)
-            try {
-              await careerService.deleteCareer(careerId);
-              await fetchCareers();
-              setTimeout(() => {
-                Alert.alert("Éxito", "La carrera se ha eliminado correctamente",
-                  [{ text: "OK" }]
-                );
-              }, 100);
-            } catch (error) {
-              const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "No se pudo eliminar la carrera";
-              Alert.alert("Error", errorMessage);
-            } finally {
-              setLoading(false)
-            }
-          },
-        },
-      ]
-    );
+    showConfirm(message, async () => {
+      // Primero cerramos el modal de confirmación
+      closeConfirmModal();
+      
+      // Pequeño delay para asegurar que el modal se cierre completamente
+      setTimeout(() => {
+        handleDeleteCareer(careerId);
+      }, 100);
+    });
   };
 
   const handleCloseModal = useCallback(() => {
@@ -107,30 +134,46 @@ export default function CareerTab() {
       ) : (
         <View className="flex-1">
           <View className="mt-10 mb-4 flex flex-row justify-between px-2 items-center">
-            <Text className="font-semibold text-xl">Gestion de Carreras</Text>
-            <AddButton
-              label={"Nueva"}
-              onPress={handleOpenModal}
-            />
+            <Text className="font-semibold text-xl">Gestión de Carreras</Text>
+            <AddButton label="Nueva" onPress={handleOpenModal} />
           </View>
           <ScrollView className="mb-20">
             {careers?.map((career) => (
               <CareerContainer
-                type={"carrera"}
+                type="carrera"
                 key={career.careerId}
                 data={career}
                 onDelete={onDelete}
               />
             ))}
           </ScrollView>
-
-          <NuevaCarreraModal
-            visible={addCareerModal}
-            onClose={handleCloseModal}
-            onSubmit={handleCreateCareer}
-          />
         </View>
       )}
+
+      <NuevaCarreraModal
+        visible={addCareerModal}
+        onClose={handleCloseModal}
+        onSubmit={handleCreateCareer}
+      />
+
+      <SuccessModal
+        visible={successModal.visible}
+        message={successModal.message}
+        onClose={closeSuccessModal}
+      />
+
+      <FailedModal
+        visible={errorModal.visible}
+        message={errorModal.message}
+        onClose={closeErrorModal}
+      />
+
+      <ConfirmModal2
+        visible={confirmModal.visible}
+        message={confirmModal.message}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+      />
     </>
   );
 }
