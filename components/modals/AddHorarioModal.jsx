@@ -11,11 +11,9 @@ import { Keyboard } from "react-native";
 import { Platform } from "react-native";
 import { Formik } from "formik";
 import * as yup from "yup";
-import DropdownInput from "../DropdownInput";
-import InputField from "../InputField";
 import GeneralButton from "../GeneralButton";
-import { Dropdown } from "react-native-element-dropdown";
-import SizedBox from "../SizedBox";
+import NewDropdown from "../NewDropdown";
+import Feather from '@expo/vector-icons/Feather';
 
 export default function AddHorarioModal({ visible, onClose, onSubmit }) {
   const HorarioSchema = yup.object().shape({
@@ -28,7 +26,7 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
         "La hora de inicio no puede ser después de las 17:00",
         (value) => {
           if (!value) return false;
-          return value <= "17:00"; 
+          return value <= "17:00";
         }
       ),
     endHour: yup
@@ -111,43 +109,39 @@ export default function AddHorarioModal({ visible, onClose, onSubmit }) {
                     touched,
                   }) => (
                     <>
-                      <DropdownInput
+                      <NewDropdown
                         label="Dia"
-                        selectedValue={values.day}
+                        value={values.day}
                         onValueChange={(option) =>
-                          setFieldValue("day", option.value)
+                          setFieldValue("day", option)
                         }
-                        items={weekDays}
-                        error={errors.day}
-                        touched={touched.day}
-                        disabled={false}
+                        options={weekDays}
+                        error={errors.day && touched.day ? errors.day : null}
+                        placeholder="Selecciona un día"
+                        labelIcon={<Feather name="calendar" size={18} color="black" />}
                       />
-                      <SizedBox height={15} />
-
-                      <DropdownInput
+                      <NewDropdown
                         label="Hora Inicio"
-                        selectedValue={values.startHour}
+                        value={values.startHour}
                         onValueChange={(option) =>
-                          setFieldValue("startHour", option.value)
+                          setFieldValue("startHour", option)
                         }
-                        items={hours}
-                        error={errors.startHour}
-                        touched={touched.startHour}
-                        disabled={false}
+                        options={hours}
+                        error={errors.startHour && touched.startHour ? errors.startHour : null}
+                        placeholder="Selecciona hora de inicio"
+                        labelIcon={<Feather name="clock" size={18} color="black" />}
                       />
-                      <SizedBox height={15} />
-                      <DropdownInput
+                      <NewDropdown
                         label="Hora Fin"
-                        selectedValue={values.endHour}
+                        value={values.endHour}
                         onValueChange={(option) =>
-                          setFieldValue("endHour", option.value)
+                          setFieldValue("endHour", option)
                         }
-                        items={hours}
-                        error={errors.endHour}
-                        touched={touched.endHour}
-                        disabled={false}
+                        options={hours}
+                        error={errors.endHour && touched.endHour ? errors.endHour : null}
+                        placeholder="Selecciona hora de fin"
+                        labelIcon={<Feather name="clock" size={18} color="black" />}
                       />
-
                       <View className="mt-4 flex-row justify-between">
                         <View className="w-2/5">
                           <GeneralButton

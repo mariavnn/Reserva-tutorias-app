@@ -29,14 +29,14 @@ export default function InfoPefil({ data }) {
   
             <View className="flex-row justify-around mt-2">
               <View className="justify-center items-center w-1/3">
-                <Text className="text-3xl font-semibold">24</Text>
+                <Text className="text-3xl font-semibold">{data?.totalSchedule}</Text>
                 <Text className="text-gray-500 text-sm text-center">Tutorías Realizadas</Text>
               </View>
   
-              <View className="justify-center items-center w-1/3">
+              {/* <View className="justify-center items-center w-1/3">
                 <Text className="text-3xl font-semibold">{data.averageRating}</Text>
                 <Text className="text-gray-500 text-sm text-center">Calificación Promedio</Text>
-              </View>
+              </View> */}
             </View>
           </>
         ) : (

@@ -48,13 +48,16 @@ export default function ReservarTutoriaCard({ data, onJoin, status }) {
             <View className="h-2 bg-gray-200 rounded-full mt-3 mb-2 overflow-hidden">
               <View
                 className="h-2 bg-yellow-400"
-                style={{ width: `${(data.agendados?.length / 5) * 100}%` }}
+                style={{ width: `${(data.agendados?.length / data?.salon?.capacidad) * 100}%` }}
               />
             </View>
-
-            <Text className="text-xs text-gray-700 mb-2">
-              Cupos: {data?.agendados?.length}/5
-            </Text>
+            {
+              data?.tipo !== "VIRTUAL" && (
+                <Text className="text-xs text-gray-700 mb-2">
+                  Cupos: {data?.agendados?.length}/{data?.salon?.capacidad}
+                </Text>
+              )
+            }
           </>
         )
       }
