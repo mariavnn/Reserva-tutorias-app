@@ -94,7 +94,6 @@ export default function EditTutoriaModal({ visible, onClose, tutoriaId, onSucces
   
   useEffect(() => {
     if (dataLoaded && tutoriaData && subjects.length > 0 && blocks.length > 0) {
-      console.log('Setting initial data with tutoriaData:', tutoriaData);
 
       const initialValues = {
         ...formLogic.getInitialValues(tutoriaData.type), // Pasa la modalidad conocida
@@ -135,7 +134,6 @@ export default function EditTutoriaModal({ visible, onClose, tutoriaId, onSucces
   }, [initialData, blocks]);
 
   const handleSubmit = async (values) => {
-    console.log("🚀 handleSubmit ejecutándose con:", { values, tutoriaId });
     try {
       setSaving(true)
 
@@ -245,7 +243,6 @@ export default function EditTutoriaModal({ visible, onClose, tutoriaId, onSucces
                       value={values.materia}
                       onValueChange={(value) => {
                         setFieldValue('materia', value)
-                        console.log(value)
                       }}
                       options={subjectOptions}
                       labelIcon={<Feather name="book" size={16} color="black" />}

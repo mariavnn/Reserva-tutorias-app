@@ -57,15 +57,12 @@ export default function ConfirmRegisterModal2({
       console.error("Error al confirmar:", error);
 
       let message = "Error desconocido";
-      console.log('ERROR RESPONSE ', error?.response?.data);
 
       if (error.response?.data) {
-        console.log('error 1', error.response.data);
         message = error.response.data;
       } else{
         message = "Error desconocido";
       }
-      console.log('MENSAJE ERROR ', message);
       setErrorMessage(message);
       setError(true);
     } finally {

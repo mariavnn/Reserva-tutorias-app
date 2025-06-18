@@ -70,6 +70,7 @@ export default function NuevoBloqueModal({ visible, onClose, onSubmit }) {
                       <InputField
                         label="Nombre del Bloque"
                         value={values.nombreBloque}
+                        placeholder={"Ej. Toledo"}
                         onChangeText={handleChange("nombreBloque")}
                         onBlur={handleBlur("nombreBloque")}
                         error={errors.nombreBloque}
@@ -78,6 +79,7 @@ export default function NuevoBloqueModal({ visible, onClose, onSubmit }) {
                       <InputField
                         label="Seccion del bloque"
                         value={values.seccion}
+                        placeholder={"Ej. TL"}
                         onChangeText={handleChange("seccion")}
                         onBlur={handleBlur("seccion")}
                         error={errors.seccion}

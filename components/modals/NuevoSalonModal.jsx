@@ -70,8 +70,9 @@ export default function NuevoSalonModal({
                   }) => (
                     <>
                       <InputField
-                        label="Nombre del Salon"
+                        label="Número del Salon"
                         value={values.nombreSalon}
+                        placeholder={"Ej. 105"}
                         onChangeText={handleChange("nombreSalon")}
                         onBlur={handleBlur("nombreSalon")}
                         error={errors.nombreSalon}
@@ -97,6 +98,7 @@ export default function NuevoSalonModal({
                         type="number"
                         label="Capacidad"
                         value={values.capacidad}
+                         placeholder={"Ej. 30"}
                         onChangeText={handleChange("capacidad")}
                         onBlur={handleBlur("capacidad")}
                         error={errors.capacidad}

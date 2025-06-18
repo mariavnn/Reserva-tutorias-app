@@ -77,7 +77,6 @@ export default function AcademicForm() {
     } catch (error) {
       setError(true);
       setErrorMessage(error.message);
-      console.log("ERROR ", error);
       setSubjects([]);
     } finally {
       setLoadingSubjects(false);
@@ -87,7 +86,6 @@ export default function AcademicForm() {
   const handleRegister = async (data) => {
     setLoading(true);
     try {
-      console.log("DATA ANTES DE PAYLOAD ", data);
       const body = {
         roleID: data?.typeUser ? parseInt(data?.typeUser?.value) : 1,
         name: data?.name,

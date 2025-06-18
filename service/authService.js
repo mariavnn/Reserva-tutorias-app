@@ -20,7 +20,6 @@ export const authService = {
 
 
   async registerUser(body) {
-    console.log('BODY PETICION DEL REGISTRO ', body);
     try {
       const response = await apiClient.post(`/auth/register`, body);
       return response.data

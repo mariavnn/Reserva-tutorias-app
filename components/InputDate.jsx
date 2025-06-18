@@ -37,7 +37,6 @@ export default function InputDate({
   }
 
   const confirmIOSDate = () => {
-    console.log('CONFIRME EN IOS')
     setSelectedDate(formatDateTime(date));
     onChange?.(formatDateTime(date));
     toggleDatePicker();

@@ -15,7 +15,6 @@ const useNotificationsStore = create(
       const state = get();
       
       if (state.isInitialized) {
-        console.log('Store ya inicializado');
         return;
       }
 

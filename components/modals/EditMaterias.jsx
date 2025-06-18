@@ -27,9 +27,8 @@ export default function EditMaterias({ visible, onClose }) {
           userInfo?.career?.careerId
         );
         setAllSubjects(subjects);
-        console.log("MATERIAS ", subjects);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -40,10 +39,9 @@ export default function EditMaterias({ visible, onClose }) {
 
   const handleSubmit = async (values) => {
     try {
-      console.log("Materias seleccionadas: ", values.subjects);
       setSuccessVisible(true);
     } catch (error) {
-      console.log("Error al guardar asignaturas", error);
+      console.error("Error al guardar asignaturas", error);
     }
   };
   const handleSuccessClose = () => {

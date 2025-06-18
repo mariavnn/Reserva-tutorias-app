@@ -51,7 +51,7 @@ export default function EditarInterfaz() {
       try {
         await fetchSubjectsInfo(userInfo?.career?.careerId);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -100,16 +100,14 @@ export default function EditarInterfaz() {
 
   const handleOnConfirm = async (data) => {
     setLoading(true);
-    console.log(data)
     try {
       const response = await userInfoService.editUser(data);
-      console.log("RESPUESTA DE LA PETICION ", response);
       setEditedPassword(null);
       fetchUserInfo();
       fetchCareerInfo();
 
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     } finally {
       setLoading(false);
@@ -117,7 +115,6 @@ export default function EditarInterfaz() {
   };
 
   const handleSubmit = async (value) => {
-    console.log('VALUE ', value);
     setEditInfo(value);
     setConfirmModal(true);
   };

@@ -151,7 +151,6 @@ const useFormLogic = (subjects, blocks) => {
       const formattedDate = formatDate(date);
 
       const availabilityData = await availabilityService.getAvailabilityFilter(classroomId, formattedDate);
-      console.log(availabilityData)
       if (Array.isArray(availabilityData)) {
         const timeSlots = availabilityData.map(availability => ({
           label: `${availability.horaInicio.slice(0, 5)} - ${availability.horaFin.slice(0, 5)} (${availability.diaSemana})`,

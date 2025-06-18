@@ -93,6 +93,7 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                       <InputField
                         label="Nombre de la materia"
                         value={values.nombreMateria}
+                        placeholder={"Ej. Algebra Lineal"}
                         onChangeText={handleChange('nombreMateria')}
                         onBlur={handleBlur('nombreMateria')}
                         error={errors.nombreMateria}
@@ -102,6 +103,7 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                       <InputField
                         label="Código de la materia"
                         value={values.codigo}
+                        placeholder={"Ej. 1234"}
                         onChangeText={handleChange('codigo')} 
                         onBlur={handleBlur('codigo')}
                         error={errors.codigo}
@@ -123,6 +125,7 @@ export default function NuevaMateriaModal({ visible, onClose, onSubmit }) {
                       <InputField
                         type="number"
                         label="Créditos de la Materia"
+                        placeholder={"Ej. 2"}
                         value={values.creditos}
                         onChangeText={handleChange('creditos')}
                         onBlur={handleBlur('creditos')}

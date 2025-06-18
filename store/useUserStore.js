@@ -46,7 +46,6 @@ export const useUserStore = create((set) => ({
     set({ loading: true });
     try {
       const subjects = await subjectService.getSubjectByIdCareer(idCareer);
-      console.log('subjects ', subjects);
       set({ subjects: subjects });
     } catch (error) {
       throw error;

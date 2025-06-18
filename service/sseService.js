@@ -31,7 +31,6 @@ class SSEService {
       const userId = await AsyncStorage.getItem('UserId');
       if (userId !== this.userID) {
         this.userID = userId;
-        console.log('userID actualizado:', this.userID);
       }
       return userId;
     } catch (error) {
@@ -84,7 +83,6 @@ class SSEService {
   // Configurar manejadores de eventos
   setupEventHandlers() {
     const onOpen = (event) => {
-      console.log('✅ Conexión SSE establecida', event);
       this.handleConnectionChange(true);
       this.handleError(null);
       this.clearReconnectTimeout();
@@ -104,7 +102,6 @@ class SSEService {
           };
         }
 
-        console.log('📧 Nueva notificación:', notificationData);
         this.callbacks.onNotificationReceived?.(notificationData);
 
       } catch (error) {
@@ -125,7 +122,6 @@ class SSEService {
     };
 
     const onConnectionEstablished = () => {
-      console.log('✅ Conexión confirmada por servidor');
     };
 
     // Agregar listeners
@@ -146,7 +142,6 @@ class SSEService {
 
     this.clearReconnectTimeout();
     this.handleConnectionChange(false);
-    console.log('🔌 Conexión SSE cerrada');
   }
 
   // Programar reconexión con backoff exponencial
@@ -185,7 +180,6 @@ class SSEService {
   initializeAppStateListener() {
     this.appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active' && !this.isConnected && this.userID) {
-        console.log('App activa - reconectando SSE');
         this.connect();
       }
     });
